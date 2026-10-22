@@ -21,5 +21,4 @@ jobs:
         cache: maven
         
     - name: Build with Maven
-      run: mvn -B package --file backend/pom.xml -Drate-limit.enabled=false -Dsecurity.rate-limiting.capacity=100000
-
+      run: mvn -B package --file backend/pom.xml -Dapp.rate-limit.capacity=100000 -Dapp.rate-limit.tokens-per-minute=100000
