@@ -1,0 +1,11 @@
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/demo
+app:
+  jwt:
+    secret: dev-only-secret-change-me-0123456789abcdef
+  cookie:
+    secure: false
+logging:
+  level:
+    com.barberstudio: DEBUG

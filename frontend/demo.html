@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>jesuss.sk8 | Barbería</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#eef1f4;--sf:#fff;--tx:#12263a;--mu:#556678;--red:#c9342b;--blue:#1f4f8f;--bd:#d3dae2;--pb:#12263a;--pt:#fff;--wa:#12794a;--ok:#e3f3ea;--er:#b3261e}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1b2a;--sf:#15283b;--tx:#eaf0f6;--mu:#9fb0c1;--red:#e0554b;--blue:#6a9be0;--bd:#26405a;--pb:#eaf0f6;--pt:#0d1b2a;--wa:#3fc885;--ok:#16382b;--er:#ff9a92}}
+:root[data-theme="dark"]{--bg:#0d1b2a;--sf:#15283b;--tx:#eaf0f6;--mu:#9fb0c1;--red:#e0554b;--blue:#6a9be0;--bd:#26405a;--pb:#eaf0f6;--pt:#0d1b2a;--wa:#3fc885;--ok:#16382b;--er:#ff9a92}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 70px);scroll-behavior:smooth}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--sf)}
+h1,h2,h3{font-family:"Avenir Next Condensed","Franklin Gothic Medium","Arial Narrow",system-ui,sans-serif;line-height:1.05;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(2.8rem,9vw,5.2rem)}h2{font-size:clamp(1.7rem,4vw,2.3rem);margin-bottom:14px}
+.pole{height:9px;background:repeating-linear-gradient(-45deg,var(--red) 0 10px,#fff 10px 20px,var(--blue) 20px 30px)}
+.note{background:var(--pb);color:var(--pt);font-size:.82rem;padding:8px 16px;text-align:center}
+header.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;background:var(--sf);border-bottom:1px solid var(--bd);display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 16px}
+.brand{font:700 1.3rem "Avenir Next Condensed","Franklin Gothic Medium","Arial Narrow",system-ui,sans-serif}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+main{max-width:1000px;margin:0 auto;padding:0 16px 60px}
+section{padding:36px 0}
+.mu{color:var(--mu)}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn,.chip{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--pb);background:var(--pb);color:var(--pt);padding:9px 16px;text-decoration:none;display:inline-block}
+.btn.ghost,.chip{background:transparent;color:var(--tx);border-color:var(--bd)}
+.btn.wa{background:var(--wa);border-color:var(--wa);color:#fff}
+.btn.sm{padding:5px 10px;font-size:.85rem}
+.chip{padding:6px 12px;border-radius:99px}.chip[aria-pressed="true"]{background:var(--pb);color:var(--pt);border-color:var(--pb)}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.hero{padding:48px 0 36px}.hero p{max-width:46ch;font-size:1.15rem;margin:16px 0 22px}
+.svc{list-style:none;padding:0;margin:0;max-width:560px}.svc li{display:flex;align-items:baseline;gap:6px;padding:7px 0}
+.svc .dots{flex:1;border-bottom:2px dotted var(--mu);transform:translateY(-4px)}.svc small{color:var(--mu);min-width:48px;text-align:right}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:14px}
+.card{all:unset;cursor:pointer;display:block}.card:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.ph{aspect-ratio:4/5;border-radius:6px;background:linear-gradient(145deg,hsl(var(--h) 35% 26%),hsl(var(--h) 42% 46%));display:grid;align-items:end;justify-items:start;padding:8px;color:#fff;font-size:.72rem}
+.cap{padding:6px 2px}.cap b{display:block}.cap small{color:var(--mu)}
+input,select,textarea{font:inherit;color:var(--tx);background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:9px 10px;width:100%}
+label{display:block;margin-bottom:12px;font-weight:600}label>*{font-weight:400;margin-top:4px}
+form.stack{max-width:520px}.err{color:var(--er);display:block;min-height:1em}
+.hp{position:absolute;left:-9999px}
+.okbox{background:var(--ok);padding:12px 14px;border-radius:6px;margin-top:12px}
+dialog{border:1px solid var(--bd);border-radius:10px;background:var(--sf);color:var(--tx);max-width:min(480px,92vw);width:100%;padding:18px}
+dialog::backdrop{background:rgba(0,0,0,.55)}dialog h2{margin:12px 0 4px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0}
+.tabs .chip b{background:var(--red);color:#fff;border-radius:99px;padding:0 7px;margin-left:6px;font-size:.78rem}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:22px}
+.kpi{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:12px}.kpi b{display:block;font-size:1.7rem;font-family:"Avenir Next Condensed","Franklin Gothic Medium","Arial Narrow",system-ui,sans-serif}.kpi small{color:var(--mu)}
+.list{list-style:none;padding:0;margin:0;background:var(--sf);border:1px solid var(--bd);border-radius:8px}
+.list>li,.list>article{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px;border-bottom:1px solid var(--bd)}.list>:last-child{border:0}
+.tm{min-width:62px;font-weight:700}.tm small{display:block;font-weight:400;color:var(--mu)}.gr{flex:1;min-width:150px}
+.bd{font-size:.8rem;padding:2px 9px;border-radius:99px;border:1px solid var(--bd)}
+.bd.CONFIRMED,.bd.on{border-color:var(--blue);color:var(--blue)}.bd.COMPLETED{background:var(--ok);border-color:transparent}.bd.CANCELLED{color:var(--mu);text-decoration:line-through}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.sw{width:38px;height:48px;border-radius:4px;background:linear-gradient(145deg,hsl(var(--h) 35% 26%),hsl(var(--h) 42% 46%))}
+details{width:100%}summary{cursor:pointer}details ul{margin:8px 0 0;color:var(--mu)}
+#toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--pb);color:var(--pt);padding:10px 16px;border-radius:8px;z-index:30;max-width:90vw}
+#toast.bad{background:var(--er);color:#fff}#toast:empty{display:none}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end}
+footer{padding:24px 16px;text-align:center;color:var(--mu);font-size:.9rem}
+:root{--r:16px;--g:linear-gradient(120deg,#ff5d6c,#7c5cff 55%,#19c2ff)}
+body{background:radial-gradient(900px 500px at 85% -10%,color-mix(in srgb,var(--blue) 18%,transparent),transparent),var(--bg)}
+header.bar{backdrop-filter:blur(14px);background:color-mix(in srgb,var(--sf) 78%,transparent);border-bottom:0}
+header.bar::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:var(--p,0%);background:var(--g)}
+.pole{border-radius:99px;background-size:42px 42px;animation:slide 6s linear infinite}
+@keyframes slide{to{background-position:42px 0}}
+.hero{position:relative;margin-top:16px;padding:48px 26px;border-radius:26px;color:#fff;overflow:hidden;background:radial-gradient(520px 320px at var(--mx,70%) var(--my,20%),rgba(124,92,255,.7),transparent),linear-gradient(135deg,#0d1b2a,#1b2f55)}
+.hero .btn{background:#fff;color:#0d1b2a;border-color:#fff}.hero .btn.ghost{background:transparent;color:#fff;border-color:#ffffff88}.hero .btn.wa{background:var(--wa);border-color:var(--wa);color:#fff}
+.btn,.chip{transition:transform .15s,background .2s}.btn:hover{transform:translateY(-2px)}.btn:active,.chip:active{transform:scale(.95)}
+.btn,.chip{border-radius:12px}.chip{border-radius:99px}.chip[aria-pressed="true"]{background:var(--g);border-color:transparent;color:#fff}
+.svc button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:baseline;gap:6px;width:100%;padding:10px 12px;border-radius:12px;transition:.2s}
+.svc button:hover{background:color-mix(in srgb,var(--blue) 12%,transparent)}.svc button:focus-visible{outline:3px solid var(--blue)}
+.svc button[aria-pressed="true"]{background:var(--pb);color:var(--pt);transform:scale(1.02)}.svc button[aria-pressed="true"] .dots{border-color:currentColor}.svc button[aria-pressed="true"] small{color:inherit}
+.estbar{margin-top:12px;padding:12px 16px;border-radius:14px;background:var(--sf);border:1px solid var(--bd);display:flex;gap:14px;align-items:center;flex-wrap:wrap}.estbar b{font-size:1.5rem}
+.cw{position:relative}.heart{position:absolute;z-index:2;top:8px;right:8px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(0,0,0,.5);color:#fff;font-size:1.1rem;cursor:pointer;transition:transform .15s,background .2s}.heart:hover{transform:scale(1.18)}.heart[aria-pressed="true"]{background:var(--red);transform:scale(1.1)}
+.card .ph{border-radius:var(--r);transition:transform .25s,box-shadow .25s}.card:hover .ph{transform:translateY(-5px) rotate(-.7deg);box-shadow:0 16px 32px rgba(0,0,0,.28)}
+.qz{background:var(--sf);border:1px solid var(--bd);border-radius:26px;padding:22px}.qz .opts{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.qz .opts .btn{padding:14px 20px;border-radius:16px}
+.bar-p{height:7px;border-radius:9px;background:var(--bd);overflow:hidden}.bar-p i{display:block;height:100%;background:var(--g);transition:width .45s}
+.slots{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}.slots .chip:disabled{opacity:.35;text-decoration:line-through;cursor:not-allowed}
+.kpi,.list,.okbox,dialog,input,select,textarea{border-radius:var(--r)}.kpi{transition:transform .2s}.kpi:hover{transform:translateY(-3px)}
+.pop{position:fixed;width:9px;height:9px;border-radius:2px;pointer-events:none;z-index:40}
+:root[data-theme=street]{--bg:#2a2a2d;--sf:#1d1d20;--tx:#f5f1e6;--mu:#bdb8aa;--red:#ff2e93;--blue:#18d4ff;--bd:#6b6b72;--pb:#ffe600;--pt:#111;--wa:#1faa59;--ok:#3a3548;--er:#ff8a8a;--r:4px;--g:linear-gradient(120deg,#ff2e93,#ffe600 55%,#18d4ff)}
+[data-theme=street] body{background:radial-gradient(circle at 10% 15%,#ff2e9340 0 110px,transparent 112px),radial-gradient(circle at 92% 6%,#18d4ff38 0 150px,transparent 152px),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .07 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),#2a2a2d}
+[data-theme=street] h1,[data-theme=street] h2,[data-theme=street] h3,[data-theme=street] .brand{font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;text-transform:uppercase;letter-spacing:.03em;font-weight:400}
+[data-theme=street] .hero{background:linear-gradient(135deg,#ff2e93,#7a1fff 60%,#18d4ff);border:4px solid #000;box-shadow:8px 8px 0 #000;border-radius:6px;transform:rotate(-.6deg)}
+[data-theme=street] .hero h1{text-shadow:4px 4px 0 #000}
+[data-theme=street] .hero::after{content:'@jesuss.sk8';position:absolute;right:16px;bottom:14px;transform:rotate(-6deg);background:#ffe600;color:#111;font:400 1.1rem Impact,sans-serif;padding:4px 12px;border:3px solid #000;box-shadow:3px 3px 0 #000}
+[data-theme=street] .pole{background:repeating-linear-gradient(-45deg,#ffe600 0 14px,#111 14px 28px);border-radius:0}
+[data-theme=street] .btn,[data-theme=street] .kpi,[data-theme=street] .list,[data-theme=street] .qz,[data-theme=street] .estbar,[data-theme=street] .ph,[data-theme=street] dialog{border:3px solid #000;box-shadow:4px 4px 0 #000;border-radius:var(--r)}
+[data-theme=street] .chip{border:3px solid #f5f1e6;box-shadow:3px 3px 0 #000}
+[data-theme=street] .btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 #000}
+[data-theme=street] .chip[aria-pressed=true]{background:#ffe600;color:#111;border-color:#000}
+[data-theme=street] .svc button[aria-pressed=true]{background:#ffe600;color:#111;transform:rotate(-1deg) scale(1.02)}
+[data-theme=street] header.bar{border-bottom:3px solid #ffe600}
+/* tema Underground: negros y grises (reemplaza el estilo anterior) */
+:root[data-theme=street]{--bg:#0b0b0b;--sf:#141414;--tx:#ececec;--mu:#9a9a9a;--red:#bdbdbd;--blue:#e8e8e8;--bd:#333;--pb:#ececec;--pt:#0a0a0a;--wa:#2e2e2e;--ok:#1e1e1e;--er:#ff9a92;--r:0px;--g:linear-gradient(90deg,#4a4a4a,#ececec)}
+[data-theme=street] body{background:radial-gradient(800px 420px at 50% -8%,#2a2a2a,transparent),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .09 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),#0b0b0b}
+[data-theme=street] h1,[data-theme=street] h2,[data-theme=street] h3,[data-theme=street] .brand{font-family:'Arial Narrow','Helvetica Neue',Impact,sans-serif;text-transform:uppercase;letter-spacing:.06em;font-weight:800}
+[data-theme=street] .hero{background:radial-gradient(420px 260px at var(--mx,70%) var(--my,20%),rgba(255,255,255,.14),transparent),linear-gradient(160deg,#1e1e1e,#0b0b0b);border:1px solid #333;box-shadow:none;border-radius:0;transform:none}
+[data-theme=street] .hero h1{color:transparent;-webkit-text-stroke:1.5px #ececec;text-shadow:none}
+[data-theme=street] .hero::after{content:'@jesuss.sk8';transform:none;background:transparent;color:#ececec;border:1px solid #ececec;box-shadow:none;font:600 .8rem system-ui,sans-serif;letter-spacing:.1em;padding:3px 10px}
+[data-theme=street] .pole{background:repeating-linear-gradient(-45deg,#ececec 0 6px,#0b0b0b 6px 14px);height:6px;animation:none}
+[data-theme=street] .btn,[data-theme=street] .kpi,[data-theme=street] .list,[data-theme=street] .qz,[data-theme=street] .estbar,[data-theme=street] .ph,[data-theme=street] dialog{border:1px solid #333;box-shadow:none;border-radius:0}
+[data-theme=street] .btn{border-color:#ececec}[data-theme=street] .btn.ghost{border-color:#555}[data-theme=street] .btn.wa{border-color:#ececec;color:#fff}
+[data-theme=street] .btn:hover{background:#0b0b0b;color:#ececec;transform:none;box-shadow:none}[data-theme=street] .btn.ghost:hover{background:#ececec;color:#0a0a0a}
+[data-theme=street] .chip{border:1px solid #444;border-radius:0;box-shadow:none}
+[data-theme=street] .chip[aria-pressed=true]{background:#ececec;color:#0a0a0a;border-color:#ececec}
+[data-theme=street] .svc button[aria-pressed=true]{background:#ececec;color:#0a0a0a;transform:none}
+[data-theme=street] .ph{filter:grayscale(1) contrast(1.1)}[data-theme=street] .card:hover .ph{filter:grayscale(1) brightness(1.3);transform:none;box-shadow:none}
+[data-theme=street] .heart[aria-pressed=true]{background:#ececec;color:#0a0a0a}
+[data-theme=street] .tabs .chip b{color:#0a0a0a}
+[data-theme=street] header.bar{border-bottom:1px solid #333}
+/* tema Neón: noche urbana, asfalto, azul marino y luces de neón (reemplaza Underground) */
+:root[data-theme=street]{--bg:#070b14;--sf:#0e1626;--tx:#e8eefc;--mu:#8d9bb5;--red:#ff2bd1;--blue:#19e3ff;--bd:#1f3350;--pb:#19e3ff;--pt:#04101a;--wa:#39ff88;--ok:#0f3326;--er:#ff7a8a;--r:0px;--g:linear-gradient(90deg,#39ff88,#19e3ff,#ff8a1f,#ff2bd1)}
+@keyframes slideN{to{background-position:113px 0}}@keyframes streak{from{transform:skewX(-20deg) translateX(0)}to{transform:skewX(-20deg) translateX(140px)}}@keyframes flick{0%,18%,22%,62%,64%,100%{opacity:1}20%,63%{opacity:.78}}
+[data-theme=street] body{background:radial-gradient(700px 380px at 12% -5%,#19e3ff26,transparent),radial-gradient(700px 380px at 96% 0,#ff2bd126,transparent),repeating-linear-gradient(100deg,transparent 0 120px,rgba(255,255,255,.025) 120px 121px),linear-gradient(180deg,#070b14,#0c1424 55%,#161d2a)}
+[data-theme=street] body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:5;mix-blend-mode:screen;background:radial-gradient(260px 260px at var(--cx,50%) var(--cy,30%),rgba(25,227,255,.14),transparent 70%)}
+[data-theme=street] h1,[data-theme=street] h2,[data-theme=street] h3,[data-theme=street] .brand{font-family:'Arial Narrow','Helvetica Neue',Impact,sans-serif;font-style:italic;font-weight:900;text-transform:uppercase;letter-spacing:.03em}
+[data-theme=street] header.bar{background:color-mix(in srgb,#070b14 82%,transparent);border-bottom:1px solid #19e3ff44}
+[data-theme=street] header.bar::before{content:'';position:absolute;left:0;right:0;top:0;height:4px;background:repeating-linear-gradient(-45deg,#39ff88 0 20px,#19e3ff 20px 40px,#ff8a1f 40px 60px,#ff2bd1 60px 80px);background-size:113px 113px;animation:slideN 2.6s linear infinite;filter:drop-shadow(0 0 6px #19e3ff)}
+[data-theme=street] .pole{height:8px;border-radius:0;background:repeating-linear-gradient(-45deg,#39ff88 0 20px,#19e3ff 20px 40px,#ff8a1f 40px 60px,#ff2bd1 60px 80px);background-size:113px 113px;animation:slideN 2.6s linear infinite;filter:drop-shadow(0 0 8px #19e3ff)}
+[data-theme=street] .hero{background:radial-gradient(440px 280px at var(--mx,70%) var(--my,20%),rgba(25,227,255,.3),transparent),radial-gradient(500px 260px at 0 100%,rgba(255,43,209,.28),transparent),linear-gradient(180deg,#0a1226,#111b34 55%,#1b2230);border:1px solid #19e3ff66;border-radius:0;box-shadow:0 0 40px #19e3ff2e,inset 0 -90px 100px -70px #ff2bd155;transform:none}
+[data-theme=street] .hero::before{content:'';position:absolute;inset:0 -280px;pointer-events:none;background:repeating-linear-gradient(90deg,transparent 0 64px,rgba(25,227,255,.16) 64px 66px,transparent 66px 140px);animation:streak 2.2s linear infinite}
+[data-theme=street] .hero>*{position:relative}
+[data-theme=street] .hero h1{color:#fff;-webkit-text-stroke:0;text-shadow:0 0 6px #19e3ff,0 0 24px #19e3ff,0 0 48px #19e3ff88;animation:flick 6s infinite}
+[data-theme=street] .hero p{color:#c6d3ee}
+[data-theme=street] .hero::after{content:'@jesuss.sk8';transform:skewX(-10deg) rotate(-3deg);background:#ff2bd1;color:#fff;border:0;box-shadow:0 0 20px #ff2bd1aa;font:900 .95rem 'Arial Narrow',Impact,sans-serif;letter-spacing:.08em;padding:4px 14px}
+[data-theme=street] main{counter-reset:s}
+[data-theme=street] section h2{display:flex;align-items:center;gap:12px}
+[data-theme=street] section h2::before{counter-increment:s;content:counter(s,decimal-leading-zero);font:italic 900 2.4rem Impact,sans-serif;color:transparent;-webkit-text-stroke:1.5px #ff2bd1;text-shadow:0 0 14px #ff2bd199}
+[data-theme=street] section h2::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#19e3ff,transparent);box-shadow:0 0 10px #19e3ff}
+[data-theme=street] :is(.cw,.kpi):nth-child(4n+1){--n:#39ff88}[data-theme=street] :is(.cw,.kpi):nth-child(4n+2){--n:#19e3ff}[data-theme=street] :is(.cw,.kpi):nth-child(4n+3){--n:#ff8a1f}[data-theme=street] :is(.cw,.kpi):nth-child(4n+4){--n:#ff2bd1}
+[data-theme=street] .btn{background:linear-gradient(90deg,#19e3ff,#39ff88);color:#04101a;border:0;border-radius:0;transform:skewX(-10deg);font-weight:800;text-transform:uppercase;letter-spacing:.06em;box-shadow:0 0 16px #19e3ff77}
+[data-theme=street] .btn.ghost{background:transparent;color:#e8eefc;border:1px solid #19e3ff88;box-shadow:none}
+[data-theme=street] .btn.wa{background:#39ff88;color:#04101a;border:0;box-shadow:0 0 16px #39ff8877}
+[data-theme=street] .btn:hover{background:linear-gradient(90deg,#ff2bd1,#ff8a1f);color:#fff;transform:skewX(-10deg) translateY(-2px);box-shadow:0 0 22px #ff2bd199}
+[data-theme=street] .btn.ghost:hover{background:#19e3ff22;color:#fff;box-shadow:0 0 16px #19e3ff66}
+[data-theme=street] .btn:active{transform:skewX(-10deg) scale(.95)}
+[data-theme=street] .chip{background:#0e1626cc;color:#e8eefc;border:1px solid #19e3ff55;border-radius:2px;transform:skewX(-10deg);box-shadow:none}
+[data-theme=street] .chip:active{transform:skewX(-10deg) scale(.95)}
+[data-theme=street] .chip[aria-pressed=true]{background:linear-gradient(90deg,#ff2bd1,#ff8a1f);color:#fff;border-color:transparent;box-shadow:0 0 14px #ff2bd199}
+[data-theme=street] .svc button:hover{background:#19e3ff1f}[data-theme=street] .svc button[aria-pressed=true]{background:linear-gradient(90deg,#39ff88,#19e3ff);color:#04101a;transform:none;box-shadow:0 0 18px #39ff8877}
+[data-theme=street] .kpi,[data-theme=street] .qz,[data-theme=street] .estbar{background:var(--sf);border:1px solid #1f3a5a;border-left:3px solid var(--n,#19e3ff);border-radius:0;box-shadow:0 0 22px #19e3ff14;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,0 100%)}
+[data-theme=street] .list,[data-theme=street] dialog{background:var(--sf);border:1px solid #1f3a5a;border-radius:0;box-shadow:0 0 26px #19e3ff1f}
+[data-theme=street] .kpi b{color:var(--n,#19e3ff);text-shadow:0 0 12px var(--n,#19e3ff)}
+[data-theme=street] .ph{filter:saturate(1.25);border:1px solid var(--n,#19e3ff);border-radius:0;box-shadow:0 8px 24px #0009;font-weight:700;text-transform:uppercase;letter-spacing:.08em;text-shadow:0 1px 4px #000}
+[data-theme=street] .card:hover .ph{filter:saturate(1.4) brightness(1.1);transform:translateY(-5px);box-shadow:0 0 0 1px var(--n,#19e3ff),0 0 30px var(--n,#19e3ff)}
+[data-theme=street] .heart[aria-pressed=true]{background:#ff2bd1;color:#fff;box-shadow:0 0 14px #ff2bd1}
+[data-theme=street] .tabs .chip b{color:#fff}
+[data-theme=street] input,[data-theme=street] select,[data-theme=street] textarea{background:#0b1220;border:1px solid #1f3a5a;color:#e8eefc;border-radius:0}
+[data-theme=street] input:focus,[data-theme=street] select:focus,[data-theme=street] textarea:focus{border-color:#19e3ff;box-shadow:0 0 0 3px #19e3ff33;outline:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div><dialog id="dlg"></dialog><div id="toast" role="status" aria-live="polite"></div>
+<script>
+const TZ='America/Montevideo',$=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hm=t=>new Date(t).toLocaleTimeString('es-UY',{hour:'2-digit',minute:'2-digit',timeZone:TZ});
+const money=n=>'$ '+Number(n).toLocaleString('es-UY');
+const at=(h,m,dd)=>{const d=new Date();d.setDate(d.getDate()+(dd||0));d.setHours(h,m||0,0,0);return d.getTime()};
+const sameDay=t=>new Date(t).toDateString()===new Date().toDateString();
+const LBL={PENDING:'Pendiente',CONFIRMED:'Confirmado',COMPLETED:'Completado',CANCELLED:'Cancelado'};
+function phone(raw){const s=(raw||'').trim(),d=s.replace(/\D/g,'');let e;
+ if(s.startsWith('+'))e='+'+d;else if(d.startsWith('00'))e='+'+d.slice(2);else if(d.startsWith('598'))e='+'+d;
+ else if(d.startsWith('09')&&d.length==9)e='+598'+d.slice(1);else if(d.startsWith('9')&&d.length==8)e='+598'+d;else e='+'+d;
+ if(!/^\+[1-9]\d{7,14}$/.test(e))throw new Error('El WhatsApp no es válido. Probá con +59899123456.');return e}
+let seq=100;
+const S={shop:{name:'jesuss.sk8',wa:'+59899119628'},
+ services:[[1,'Corte clásico',600,30],[2,'Taper fade',700,45],[3,'Arreglo de barba',400,20],[4,'Corte + barba',950,60],[5,'Corte infantil',500,30]].map(([id,name,price,min])=>({id,name,price,min})),
+ styles:['Taper fade','Low fade','Mid fade','High fade','Mohicano','Corte clásico','Crop','Cortes con rulos','Cortes infantiles'].map((name,i)=>({id:i+1,name})),
+ items:[[1,'Taper fade clásico',1,1,212],[2,'Low fade con textura',2,1,12],[3,'Mid fade prolijo',3,1,200],[4,'High fade marcado',4,1,350],[5,'Mohicano moderno',5,1,30],[6,'Rulos definidos',8,1,280],[7,'Corte infantil',9,1,150],[8,'Crop (borrador)',7,0,60]].map(([id,t,sid,pub,h])=>({id,t,sid,pub:!!pub,h})),
+ clients:[[1,'Cliente Demo Uno','+59899100001'],[2,'Cliente Demo Dos','+59899100002'],[3,'Cliente Demo Tres','+59899100003'],[4,'Cliente Demo Cuatro','+59899100004'],[5,'Cliente Demo Cinco','+59899100005']].map(([id,name,ph])=>({id,name,ph})),
+ appts:[],visits:[],reqs:[{id:90,name:'Solicitante Demo',ph:'+59899100099',sid:2,msg:'Quiero un low fade parecido al de la galería.',pref:'Sábado a la mañana',st:'NEW'}]};
+const svc=id=>S.services.find(x=>x.id==id),cli=id=>S.clients.find(x=>x.id==id),sty=id=>S.styles.find(x=>x.id==id);
+const busy=(s,e)=>S.appts.some(a=>a.st!=='CANCELLED'&&a.start<e&&a.end>s);
+function addAppt(cid,sid,start,st){const v=svc(sid),end=start+v.min*60000;
+ if(busy(start,end))throw new Error('Ese horario se superpone con otro turno.');
+ const a={id:++seq,cid:+cid,sid:+sid,start,end,price:v.price,st:st||'CONFIRMED'};S.appts.push(a);return a}
+function complete(id){const a=S.appts.find(x=>x.id===id),ex=S.visits.find(v=>v.aid===id);
+ if(a.st==='COMPLETED')return ex;
+ if(a.st==='CANCELLED')throw new Error('Un turno cancelado no puede completarse.');
+ if(a.st!=='CONFIRMED')throw new Error('Confirmá el turno antes de completarlo.');
+ const v={id:++seq,aid:id,cid:a.cid,at:a.start,svc:svc(a.sid).name,price:a.price};S.visits.push(v);a.st='COMPLETED';return v}
+S.appts=[];
+[[1,2,at(15,0,-1),'CONFIRMED'],[2,1,at(16,0,-1),'CONFIRMED'],[3,4,at(10,0),'CONFIRMED'],[4,3,at(12,0),'PENDING'],[5,2,at(15,30),'CONFIRMED']].forEach(([c,s,t,st])=>addAppt(c,s,t,st));
+complete(S.appts[0].id);S.appts[1].st='CANCELLED';
+const V={mode:'public',tab:'hoy',admin:false,s:'',q:'',fav:new Set(),est:new Set(),qz:{step:0,ans:[]},day:null,time:null,list:[]};
+const wa=t=>'https://wa.me/'+S.shop.wa.slice(1)+'?text='+encodeURIComponent(t);
+const toast=(m,bad)=>{const t=$('#toast');t.textContent=m;t.className=bad?'bad':'';clearTimeout(toast.k);toast.k=setTimeout(()=>t.textContent='',3500)};
+const dlg=$('#dlg'),dopen=h=>{dlg.innerHTML=h;if(!dlg.open)dlg.showModal()};
+let pending=null;
+const ask=(m,fn)=>{pending=fn;dopen(`<h2>${esc(m)}</h2><p class=mu>Esta acción no se puede deshacer.</p><div class=row><button class=btn data-a=yes>Sí, continuar</button><button class="btn ghost" data-a=close>Volver</button></div>`)};
+
+function render(){
+ $('#app').innerHTML=`<div class=note>Vista previa con datos simulados que viven en este navegador. La aplicación real (Spring Boot + PostgreSQL) corre en tu equipo; esto muestra el diseño y las reglas de negocio.</div>
+ <header class=bar><span class=brand>jesuss.sk8</span><nav aria-label="Vista"><button class="chip" data-a=mode data-v=public aria-pressed="${V.mode==='public'}">Sitio público</button><button class="chip" data-a=mode data-v=panel aria-pressed="${V.mode==='panel'}">Panel de gestión</button><button class=chip data-a=theme aria-label="Cambiar de tema: blanco, azul o neón">Tema: ${TN[document.documentElement.dataset.theme]||'Auto'}</button></nav></header>
+ <main>${V.mode==='public'?pub():panel()}</main><footer>Contenido de demostración: no hay clientes, reseñas ni fotos reales. <a href="https://www.instagram.com/jesuss.sk8/" target=_blank rel=noopener style="color:inherit">Instagram @jesuss.sk8</a></footer>`;
+ if(V.mode==='public'){drawGallery();drawQz();drawEst();drawSlots()}if(V.mode==='panel'&&V.admin){countUp();if(V.tab==='clientes')drawClients()}}
+
+function pub(){
+ const sv=S.services.map(s=>`<li><button data-a=est data-id=${s.id} aria-pressed="${V.est.has(s.id)}"><span>${esc(s.name)}</span><span class=dots></span><b>${money(s.price)}</b><small>${s.min} min</small></button></li>`).join('');
+ const so=S.styles.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+ const io=S.items.filter(i=>i.pub).map(i=>`<option value="${i.id}">${esc(i.t)}</option>`).join('');
+ return `<div class=pole></div>
+ <section class=hero><h1>Cortes que se notan.</h1><p>Barbería de Jesus Albornoz. Degradés, clásicos y rulos trabajados con calma. Mirá el portfolio, elegí uno y pedí tu turno por WhatsApp.</p>
+ <div class=row><a class=btn href="#quiz">Encontrá tu corte</a><a class="btn ghost" href="#galeria">Ver los cortes</a><a class="btn wa" target=_blank rel=noopener href="${wa('Hola, quisiera consultar por un turno.')}">Consultar por WhatsApp</a></div></section>
+ <section id=quiz><h2>Encontrá tu corte</h2><div class=qz id=qz></div></section>
+ <section id=servicios><h2>Armá tu combo</h2><ul class=svc>${sv}</ul><div id=est aria-live=polite></div></section>
+ <section id=galeria><h2>Portfolio de cortes</h2>
+ <div class=row><input id=q type=search placeholder="Buscar por nombre" aria-label="Buscar corte" style="max-width:260px"><button class="btn ghost" data-a=reset>Restablecer filtros</button></div>
+ <div id=chips class=row style="margin-top:10px" role=group aria-label="Filtrar por estilo"></div><div id=grid class=grid></div></section>
+ <section id=solicitud><h2>Pedí tu corte</h2><p class=mu style="max-width:52ch">Tu solicitud no es una reserva: el barbero la revisa y te confirma el horario.</p>
+ <form data-f=req class=stack novalidate>
+ <label>Nombre<input name=name autocomplete=name><small class=err id=e-name></small></label>
+ <label>WhatsApp<input name=whatsapp inputmode=tel autocomplete=tel placeholder="099 123 456"><small class=err id=e-whatsapp></small></label>
+ <label>Estilo de corte<select name=style><option value="">Sin preferencia</option>${so}</select></label>
+ <label>Corte del portfolio<select name=item id=rp><option value="">Ninguno</option>${io}</select></label>
+ <label>Detalles<textarea name=message rows=3 maxlength=1000></textarea></label>
+ <div style="margin-bottom:12px"><b>Horario preferido (opcional)</b><div id=slots></div><input type=hidden name=pref id=pref></div>
+ <input class=hp name=website tabindex=-1 autocomplete=off aria-hidden=true>
+ <button class=btn>Enviar solicitud</button></form><div id=reqOut aria-live=polite></div></section>`}
+
+const card=i=>`<div class=cw><button class=heart data-a=fav data-id=${i.id} aria-pressed="${V.fav.has(i.id)}" aria-label="Favorito: ${esc(i.t)}">♥</button><button class=card data-a=open data-id=${i.id}><div class=ph style="--h:${i.h}" role=img aria-label="Foto de demostración: ${esc(i.t)}">Foto de demostración</div><div class=cap><b>${esc(i.t)}</b><small>${esc(sty(i.sid).name)}</small></div></button></div>`;
+function drawGallery(){
+ $('#chips').innerHTML=[['','Todos'],['fav','♥ Favoritos ('+V.fav.size+')'],...S.styles.map(s=>[s.id,s.name])].map(([v,l])=>`<button class=chip data-a=sty data-v="${v}" aria-pressed="${String(V.s)===String(v)}">${esc(l)}</button>`).join('');
+ const q=V.q.trim().toLowerCase(),list=S.items.filter(i=>i.pub&&(!V.s||(V.s==='fav'?V.fav.has(i.id):i.sid==V.s))&&i.t.toLowerCase().includes(q));
+ V.list=list;$('#grid').innerHTML=list.length?list.map(card).join(''):`<p class=mu>No hay cortes con esos filtros. Probá con otro estilo o restablecé la búsqueda.</p>`}
+function openItem(id){const i=S.items.find(x=>x.id===id);
+ dopen(`<div class=ph style="--h:${i.h};aspect-ratio:4/3" role=img aria-label="Foto de demostración: ${esc(i.t)}">Foto de demostración</div><h2>${esc(i.t)}</h2><p class=mu>${esc(sty(i.sid).name)}</p><p>Ejemplo de demostración. Acá va la descripción del trabajo.</p>
+ <div class=row><a class="btn wa" target=_blank rel=noopener href="${wa(`Hola, vi el corte ${i.t} en tu portfolio y me gustaría consultar disponibilidad para hacerme uno.`)}">Consultar por este estilo</a><button class=btn data-a=req data-id=${i.id}>Pedir este corte</button><button class="btn ghost" data-a=nav data-d=-1 data-id=${i.id} aria-label="Corte anterior">‹</button><button class="btn ghost" data-a=nav data-d=1 data-id=${i.id} aria-label="Corte siguiente">›</button><button class="btn ghost" data-a=close>Cerrar</button></div><p class=mu><small>Tip: con las flechas ← → del teclado pasás al siguiente corte.</small></p>`)}
+
+function panel(){
+ if(!V.admin)return `<section><h2>Panel de gestión</h2><p class=mu>Usuario de demostración ya completado.</p>
+ <form data-f=login class=stack><label>Email<input name=email value="demo@barberstudio.test" autocomplete=username></label>
+ <label>Contraseña<input name=password type=password value="demo1234" autocomplete=current-password></label><small class=err id=e-login></small><button class=btn>Ingresar</button></form></section>`;
+ const nr=S.reqs.filter(r=>r.st==='NEW').length;
+ const tabs=[['hoy','Hoy'],['clientes','Clientes'],['solicitudes','Solicitudes'],['portfolio','Portfolio']];
+ return `<div class=pole style="margin-top:-1px"></div><div class=tabs role=tablist>${tabs.map(([k,l])=>`<button class=chip data-a=tab data-v=${k} aria-pressed="${V.tab===k}">${l}${k==='solicitudes'&&nr?`<b>${nr}</b>`:''}</button>`).join('')}<button class="chip" data-a=logout style="margin-left:auto">Cerrar sesión</button></div>${P[V.tab]()}`}
+
+const P={
+hoy(){const today=S.appts.filter(a=>sameDay(a.start)).sort((a,b)=>a.start-b.start),vt=S.visits.filter(v=>sameDay(v.at));
+ const inc=vt.reduce((s,v)=>s+v.price,0),pend=S.appts.filter(a=>a.st==='PENDING'&&a.end>Date.now()).length,canc=today.filter(a=>a.st==='CANCELLED').length,nr=S.reqs.filter(r=>r.st==='NEW').length;
+ const k=(b,s,t)=>`<div class=kpi><b data-n="${String(b).replace(/\D/g,'')}" data-m="${String(b).startsWith('$')?1:0}">${b}</b>${s}${t?`<br><small>${t}</small>`:''}</div>`;
+ const rows=today.map(a=>`<li><div class=tm>${hm(a.start)}<small>${(a.end-a.start)/60000} min</small></div><div class=gr><b>${esc(cli(a.cid).name)}</b><br><span class=mu>${esc(svc(a.sid).name)}, ${money(a.price)}</span></div><span class="bd ${a.st}">${LBL[a.st]}</span><div class=acts>${
+ a.st==='PENDING'?`<button class="btn sm" data-a=conf data-id=${a.id}>Confirmar</button>`:''}${a.st==='CONFIRMED'?`<button class="btn sm" data-a=done data-id=${a.id}>Completar</button>`:''}${
+ a.st==='PENDING'||a.st==='CONFIRMED'?`<button class="btn sm ghost" data-a=cancel data-id=${a.id}>Cancelar</button>`:''}</div></li>`).join('');
+ const co=S.clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join(''),so=S.services.map(s=>`<option value="${s.id}">${esc(s.name)}, ${money(s.price)}</option>`).join('');
+ const n=new Date();n.setHours(n.getHours()+1,0,0,0);
+ return `<div class=kpis>${k(money(inc),'Ingresos registrados hoy','Solo servicios completados y cobrados. No es ganancia neta.')}${k(vt.length,'Completados hoy')}${k(pend,'Por confirmar')}${k(canc,'Cancelados hoy')}${k(nr,'Solicitudes nuevas')}</div>
+ <h2>Agenda de hoy</h2>${rows?`<ul class=list>${rows}</ul>`:`<p class=mu>No hay turnos para hoy. Agendá el primero abajo.</p>`}
+ <h3 style="margin:26px 0 10px">Agendar turno</h3><form data-f=appt class=two><label>Cliente<select name=cid>${co}</select></label><label>Servicio<select name=sid>${so}</select></label>
+ <label>Hora de hoy<input type=time name=time required value="${String(n.getHours()).padStart(2,'0')}:00"></label><button class=btn style="margin-bottom:12px">Agendar turno</button></form><small class=err id=e-appt></small>`},
+clientes(){return `<div class=row style="margin-bottom:12px"><input id=cq type=search placeholder="Buscar por nombre o teléfono" aria-label="Buscar cliente" style="max-width:300px"></div><div id=clist></div>
+ <h3 style="margin:26px 0 10px">Nuevo cliente</h3><form data-f=client class=two><label>Nombre<input name=name></label><label>WhatsApp<input name=whatsapp inputmode=tel placeholder="099 123 456"></label><button class=btn style="margin-bottom:12px">Guardar cliente</button></form><small class=err id=e-client></small>`},
+solicitudes(){const so=S.services.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+ return S.reqs.length?`<div class=list>${S.reqs.map(r=>`<article><div class=gr><b>${esc(r.name)}</b> <span class=mu>${esc(r.ph)}</span><br>${r.sid?esc(sty(r.sid).name)+'. ':''}${esc(r.msg||'')}<br><span class=mu>Prefiere: ${esc(r.pref||'sin indicar')}</span></div>${
+ r.st==='NEW'?`<select class=rs aria-label="Servicio">${so}</select><input class=rt type=time value="17:00" aria-label="Hora de hoy" style="width:auto"><button class="btn sm" data-a=acc data-id=${r.id}>Aceptar y agendar</button><button class="btn sm ghost" data-a=rej data-id=${r.id}>Rechazar</button>`:`<span class="bd ${r.st==='ACCEPTED'?'COMPLETED':'CANCELLED'}">${r.st==='ACCEPTED'?'Aceptada':'Rechazada'}</span>`}</article>`).join('')}</div>`:`<p class=mu>No hay solicitudes. Cuando alguien envíe el formulario público, aparece acá.</p>`},
+portfolio(){return `<p class=mu>Los borradores nunca aparecen en la galería pública.</p><ul class=list style="margin-top:10px">${S.items.map(i=>`<li><div class=sw style="--h:${i.h}"></div><div class=gr><b>${esc(i.t)}</b><br><span class=mu>${esc(sty(i.sid).name)}</span></div><span class="bd ${i.pub?'on':''}">${i.pub?'Publicado':'Borrador'}</span><button class="btn sm ghost" data-a=pubtog data-id=${i.id}>${i.pub?'Despublicar':'Publicar'}</button></li>`).join('')}</ul>`}};
+
+function drawClients(){const q=($('#cq')?.value||'').trim().toLowerCase(),d=q.replace(/\D/g,'');
+ const l=S.clients.filter(c=>!q||c.name.toLowerCase().includes(q)||(d&&c.ph.includes(d)));
+ $('#clist').innerHTML=l.length?`<div class=list>${l.map(c=>{const vs=S.visits.filter(v=>v.cid===c.id);
+ return `<article><details><summary><b>${esc(c.name)}</b> <span class=mu>${esc(c.ph)}, ${vs.length} visitas, ${money(vs.reduce((s,v)=>s+v.price,0))}</span></summary><ul>${vs.length?vs.map(v=>`<li>${new Date(v.at).toLocaleDateString('es-UY')}: ${esc(v.svc)}, ${money(v.price)}</li>`).join(''):'<li>Todavía no tiene visitas registradas.</li>'}</ul></details></article>`}).join('')}</div>`:`<p class=mu>No encontramos clientes con esa búsqueda.</p>`}
+
+const A={
+ mode(d){V.mode=d.v;render();scrollTo(0,0)},sty(d){V.s=d.v;drawGallery()},
+ reset(){V.s='';V.q='';const q=$('#q');if(q)q.value='';drawGallery()},
+ open(d){openItem(+d.id)},close(){dlg.close()},yes(){dlg.close();pending&&pending();pending=null},
+ req(d){dlg.close();$('#rp').value=d.id;$('#solicitud').scrollIntoView();$('#solicitud input').focus({preventScroll:true})},
+ tab(d){V.tab=d.v;render()},logout(){V.admin=false;render()},
+ conf(d){S.appts.find(a=>a.id==d.id).st='CONFIRMED';toast('Turno confirmado.');render()},
+ cancel(d){ask('¿Cancelar este turno?',()=>{S.appts.find(a=>a.id==d.id).st='CANCELLED';toast('Turno cancelado. No genera ingresos.');render()})},
+ done(d){try{const v=complete(+d.id);toast('Visita registrada: '+money(v.price));burst();render()}catch(e){toast(e.message,1)}},
+ acc(d){const r=S.reqs.find(x=>x.id==d.id),box=document.activeElement.closest('article'),[h,m]=box.querySelector('.rt').value.split(':').map(Number);
+  try{let c=S.clients.find(x=>x.ph===r.ph);if(!c)c={id:++seq,name:r.name,ph:r.ph};
+   const a=addAppt(c.id,box.querySelector('.rs').value,at(h,m),'CONFIRMED');if(!S.clients.includes(c))S.clients.push(c);
+   r.st='ACCEPTED';toast('Solicitud aceptada: turno creado a las '+hm(a.start)+'.');render()}catch(e){toast(e.message,1)}},
+ rej(d){S.reqs.find(x=>x.id==d.id).st='REJECTED';toast('Solicitud rechazada.');render()},
+ pubtog(d){const i=S.items.find(x=>x.id==d.id);i.pub=!i.pub;toast(i.pub?'Publicado en la galería.':'Pasó a borrador.');render()}};
+const TN={light:'Blanco',dark:'Azul',street:'Neón'};
+const QZ=[{q:'¿Cómo llevás el pelo?',o:[['Corto y prolijo',[1,2,3,6]],['Con contraste y marcado',[4,5,7]],['Natural, con volumen o rulos',[8,9,6]]]},{q:'¿Cuánto mantenimiento querés?',o:[['Poco: cada 4 a 6 semanas',[6,3,8]],['Cada 2 a 3 semanas',[1,2,3,4]],['Soy de cambiar seguido',[5,7,9]]]},{q:'¿Qué buscás con el corte?',o:[['Algo clásico y formal',[6,1]],['Moderno y urbano',[2,3,4,5]],['Cómodo para todos los días',[7,8,9]]]}];
+function drawQz(){const z=V.qz,el=$('#qz');if(!el)return;
+ if(z.step<QZ.length){const q=QZ[z.step];el.innerHTML=`<div class=bar-p><i style="width:${z.step/QZ.length*100}%"></i></div><h3 style="margin:16px 0 0;font-size:1.6rem">${q.q}</h3><div class=opts>${q.o.map((o,i)=>`<button class=btn data-a=qa data-i=${i}>${o[0]}</button>`).join('')}</div><small class=mu>Pregunta ${z.step+1} de ${QZ.length}</small>`;return}
+ const sc=S.items.filter(i=>i.pub).map(i=>({i,n:z.ans.filter(a=>a.includes(i.sid)).length})).sort((a,b)=>b.n-a.n).slice(0,3);
+ el.innerHTML=`<div class=bar-p><i style="width:100%"></i></div><h3 style="margin:16px 0 0;font-size:1.6rem">Estos cortes van con vos</h3><div class=grid>${sc.map(({i,n})=>`<button class=card data-a=open data-id=${i.id}><div class=ph style="--h:${i.h}" role=img aria-label="Foto de demostración: ${esc(i.t)}">${Math.round(n/QZ.length*100)}% de coincidencia</div><div class=cap><b>${esc(i.t)}</b><small>${esc(sty(i.sid).name)}</small></div></button>`).join('')}</div><div class=row style="margin-top:12px"><button class="btn ghost" data-a=qr>Volver a empezar</button></div>`}
+function drawEst(){const el=$('#est');if(!el)return;const l=[...V.est].map(svc),t=l.reduce((s,x)=>s+x.price,0),m=l.reduce((s,x)=>s+x.min,0);
+ el.innerHTML=l.length?`<div class=estbar><b>${money(t)}</b><span class=mu>${m>=60?Math.floor(m/60)+' h ':''}${m%60?(m%60)+' min':''} en total</span><button class=btn data-a=estgo>Pedir turno con esto</button></div>`:`<p class=mu style="margin-top:10px">Tocá los servicios para armar tu combo y ver el total.</p>`}
+function drawSlots(){const el=$('#slots');if(!el)return;const days=[...Array(6)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()+i);return d}),hrs=[];for(let h=10;h<19;h++){hrs.push([h,0]);hrs.push([h,30])}
+ el.innerHTML=`<div class=slots>${days.map((d,i)=>`<button type=button class=chip data-a=day data-i=${i} aria-pressed="${V.day===i}">${i?d.toLocaleDateString('es-UY',{weekday:'short',day:'numeric'}):'Hoy'}</button>`).join('')}</div>`+(V.day==null?'<small class=mu>Elegí un día para ver los horarios libres.</small>':`<div class=slots>${hrs.map(([h,m])=>{const t=at(h,m,V.day),dis=t<Date.now()||busy(t,t+18e5);return `<button type=button class=chip data-a=time data-t=${t} ${dis?'disabled':''} aria-pressed="${V.time===t}">${String(h).padStart(2,'0')}:${m?'30':'00'}</button>`}).join('')}</div>`)}
+function countUp(){document.querySelectorAll('.kpi b[data-n]').forEach(el=>{const n=+el.dataset.n,m=el.dataset.m==='1',t0=performance.now(),f=t=>{const p=Math.min(1,(t-t0)/700),v=Math.round(n*(1-Math.pow(1-p,3)));el.textContent=m?money(v):v;if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)})}
+function burst(){if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;const c=['#ff5d6c','#7c5cff','#19c2ff','#ffd166','#2ee59d'];for(let i=0;i<28;i++){const p=document.createElement('i');p.className='pop';p.style.cssText=`left:50%;top:60%;background:${c[i%5]}`;document.body.append(p);const a=Math.random()*Math.PI*2,r=80+Math.random()*180;p.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:`translate(${Math.cos(a)*r}px,${Math.sin(a)*r+120}px) rotate(${Math.random()*720}deg)`,opacity:0}],{duration:900+Math.random()*500,easing:'cubic-bezier(.2,.7,.3,1)'}).onfinish=()=>p.remove()}}
+Object.assign(A,{
+ theme(d,b){const r=document.documentElement,o=['light','dark','street'],cur=r.dataset.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'),n=o[(o.indexOf(cur)+1)%3];r.dataset.theme=n;b.textContent='Tema: '+TN[n];toast('Tema '+TN[n]+'.')},
+ fav(d){const id=+d.id;V.fav.has(id)?V.fav.delete(id):V.fav.add(id);toast(V.fav.has(id)?'Guardado en favoritos.':'Quitado de favoritos.');drawGallery()},
+ nav(d){const l=V.list.length?V.list:S.items.filter(i=>i.pub),k=l.findIndex(i=>i.id==d.id);openItem(l[(k+Number(d.d)+l.length)%l.length].id)},
+ est(d,b){const id=+d.id;V.est.has(id)?V.est.delete(id):V.est.add(id);b.setAttribute('aria-pressed',V.est.has(id));drawEst()},
+ estgo(){const l=[...V.est].map(svc);$('[name=message]').value='Quiero: '+l.map(x=>x.name).join(' + ')+' ('+money(l.reduce((s,x)=>s+x.price,0))+').';$('#solicitud').scrollIntoView();toast('Combo cargado en el formulario.')},
+ qa(d){V.qz.ans.push(QZ[V.qz.step].o[d.i][1]);V.qz.step++;drawQz()},qr(){V.qz={step:0,ans:[]};drawQz()},
+ day(d){V.day=+d.i;V.time=null;drawSlots()},
+ time(d){V.time=+d.t;$('#pref').value=new Date(V.time).toLocaleString('es-UY',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});drawSlots();toast('Horario elegido: '+$('#pref').value)}});
+addEventListener('scroll',()=>{const h=document.documentElement,b=document.querySelector('header.bar');if(b)b.style.setProperty('--p',(scrollY/((h.scrollHeight-innerHeight)||1)*100)+'%')},{passive:true});
+document.addEventListener('pointermove',e=>{const h=e.target.closest&&e.target.closest('.hero');if(h){const r=h.getBoundingClientRect();h.style.setProperty('--mx',(e.clientX-r.left)+'px');h.style.setProperty('--my',(e.clientY-r.top)+'px')}});
+document.addEventListener('pointermove',e=>{if(document.documentElement.dataset.theme==='street'){const s=document.documentElement.style;s.setProperty('--cx',e.clientX+'px');s.setProperty('--cy',e.clientY+'px')}});
+document.addEventListener('keydown',e=>{if(!dlg.open)return;const b=dlg.querySelector('[data-a=nav]');if(b&&(e.key==='ArrowRight'||e.key==='ArrowLeft'))A.nav({id:b.dataset.id,d:e.key==='ArrowRight'?1:-1})});
+const F={
+ req(f){const d=Object.fromEntries(new FormData(f));$('#e-name').textContent=$('#e-whatsapp').textContent='';let ok=true,ph;
+  if(!d.name.trim()){$('#e-name').textContent='Ingresá tu nombre.';ok=false}
+  try{ph=phone(d.whatsapp)}catch(x){$('#e-whatsapp').textContent=x.message;ok=false}
+  if(!ok)return;
+  if(!d.website){if(S.reqs.filter(r=>r.ph===ph&&r.st==='NEW').length>=3){$('#e-whatsapp').textContent='Ya recibimos varias solicitudes con este número.';return}
+   S.reqs.unshift({id:++seq,name:d.name.trim(),ph,sid:+d.style||null,msg:d.message,pref:d.pref,st:'NEW'})}
+  $('#reqOut').innerHTML=`<div class=okbox><b>Recibimos tu solicitud.</b> Todavía no es una reserva: te confirmamos el horario por WhatsApp.<p><a class="btn wa" target=_blank rel=noopener href="${wa('Hola, soy '+d.name.trim()+'. Acabo de enviar una solicitud de corte desde la web.')}">Abrir WhatsApp</a></p></div>`;f.reset();burst();V.day=V.time=null;drawSlots()},
+ login(f){const d=Object.fromEntries(new FormData(f));if(d.email==='demo@barberstudio.test'&&d.password==='demo1234'){V.admin=true;render()}else $('#e-login').textContent='Email o contraseña incorrectos.'},
+ appt(f){const d=Object.fromEntries(new FormData(f)),[h,m]=d.time.split(':').map(Number);
+  try{const a=addAppt(d.cid,d.sid,at(h,m));toast('Turno agendado a las '+hm(a.start)+'.');render()}catch(e){$('#e-appt').textContent=e.message}},
+ client(f){const d=Object.fromEntries(new FormData(f));$('#e-client').textContent='';
+  try{if(!d.name.trim())throw new Error('Ingresá el nombre del cliente.');const ph=phone(d.whatsapp),ex=S.clients.find(c=>c.ph===ph);
+   if(ex)throw new Error('Ya existe un cliente con ese WhatsApp: '+ex.name+'.');
+   S.clients.push({id:++seq,name:d.name.trim(),ph});toast('Cliente guardado.');render()}catch(e){$('#e-client').textContent=e.message}}};
+const CATS=[['corte','Cortes'],['color','Color'],['barba','Barba'],['tatuaje','Tatuajes']],CATN={corte:'Corte',color:'Color',barba:'Barba',tatuaje:'Tatuaje'};
+S.styles.forEach(s=>s.cat='corte');
+[['Mechas','color'],['Decoloración','color'],['Color fantasía','color'],['Barba perfilada','barba'],['Barba full','barba'],['Lettering','tatuaje'],['Línea fina','tatuaje']].forEach(([name,cat],k)=>S.styles.push({id:10+k,name,cat}));
+S.items.forEach(i=>i.demo=1);
+[['Mechas rubias',10,40],['Decoloración platino',11,190],['Color fantasía azul',12,230],['Barba perfilada',13,20],['Barba full cuidada',14,100],['Lettering a mano',15,300],['Tatuaje de línea fina',16,170]].forEach(([t,sid,h],k)=>S.items.push({id:20+k,t,sid,h,pub:true,demo:1}));
+V.cat='';V.qm='life';V.face={};
+function imgs(r){r.querySelectorAll('.card[data-id],.ph[data-pid]').forEach(e=>{const i=S.items.find(x=>x.id==(e.dataset.id||e.dataset.pid));if(i&&i.img){const p=e.classList.contains('ph')?e:e.querySelector('.ph');p.style.background='center/cover url('+i.img+')';p.textContent=''}})}
+function drawGallery(){const cs=[['','Todo'],...CATS,['fav','♥ Favoritos ('+V.fav.size+')']],sub=V.cat&&V.cat!=='fav'?S.styles.filter(s=>s.cat===V.cat):[];
+ $('#chips').innerHTML=cs.map(([v,l])=>`<button class=chip data-a=cat data-v=${v} aria-pressed=${V.cat===v}>${esc(l)}</button>`).join('')+(sub.length?'<span style=width:100%></span>'+sub.map(s=>`<button class=chip data-a=sty data-v=${s.id} aria-pressed=${String(V.s)===String(s.id)}>${esc(s.name)}</button>`).join(''):'');
+ const q=V.q.trim().toLowerCase(),list=S.items.filter(i=>i.pub&&(V.cat==='fav'?V.fav.has(i.id):(!V.cat||sty(i.sid).cat===V.cat)&&(!V.s||i.sid==V.s))&&(i.t.toLowerCase().includes(q)||(i.tags||[]).some(t=>t.toLowerCase().includes(q))));
+ V.list=list;$('#grid').innerHTML=list.length?list.map(card).join(''):'<p class=mu>No hay publicaciones con esos filtros. Probá con otra categoría o restablecé la búsqueda.</p>';imgs($('#grid'))}
+function openItem(id){const i=S.items.find(x=>x.id===id),s=sty(i.sid);
+ dopen(`<div class=ph data-pid=${i.id} style='--h:${i.h};aspect-ratio:4/3' role=img aria-label='Foto de demostración: ${esc(i.t)}'>Foto de demostración</div><h2>${esc(i.t)}</h2><p class=mu>${esc(CATN[s.cat])}: ${esc(s.name)}</p><p>${esc(i.d||'Ejemplo de demostración.')}</p>${(i.tags||[]).length?`<p class=row>${i.tags.map(t=>`<span class=bd>#${esc(t)}</span>`).join('')}</p>`:''}<div class=row><a class='btn wa' target=_blank rel=noopener href='${wa(`Hola, vi el trabajo ${i.t} en tu portfolio y me gustaría consultar disponibilidad.`)}'>Consultar por este estilo</a><button class=btn data-a=req data-id=${i.id}>Pedir este trabajo</button><button class='btn ghost' data-a=nav data-d=-1 data-id=${i.id} aria-label='Anterior'>‹</button><button class='btn ghost' data-a=nav data-d=1 data-id=${i.id} aria-label='Siguiente'>›</button><button class='btn ghost' data-a=close>Cerrar</button></div>`);imgs(dlg)}
+const FACE=[['','Elegí…'],['ovalado','Ovalado'],['redondo','Redondo'],['cuadrado','Cuadrado'],['alargado','Alargado'],['corazon','Corazón (frente amplia)'],['diamante','Diamante (pómulos marcados)']],SKULL=[['','Elegí…'],['redondeado','Redondeado (más ancho que largo)'],['alargado','Alargado (más largo que ancho)'],['equilibrado','Equilibrado'],['planonuca','Nuca plana']],HAIR=[['','Elegí…'],['liso-fino','Liso y fino'],['liso-grueso','Liso y grueso'],['ondulado','Ondulado'],['rizado','Rizado'],['crespo','Afro o crespo']];
+const FW={ovalado:{1:2,2:2,3:2,6:2,7:2,5:1},redondo:{4:3,3:2,5:2,1:1},cuadrado:{7:3,6:2,2:2,1:1},alargado:{2:3,7:3,8:2,6:1},corazon:{6:2,8:3,2:2,7:2},diamante:{7:2,8:2,1:2,3:1}},SW={redondeado:{1:1,3:1,4:1},alargado:{2:1,7:1,8:1},equilibrado:{1:1,2:1,3:1,6:1},planonuca:{8:2,6:1,5:1}},HW={'liso-fino':{7:2,6:1,2:1},'liso-grueso':{1:2,3:2,4:1,5:1},ondulado:{6:2,1:1,3:1},rizado:{8:3,2:1},crespo:{8:3,4:1,1:1}};
+const TIP={ovalado:'Tu rostro es muy versátil: casi cualquier corte te funciona.',redondo:'Volumen arriba y laterales bajos alargan visualmente tu rostro.',cuadrado:'Líneas limpias y algo de textura suavizan la mandíbula marcada.',alargado:'Conviene volumen en los laterales y poca altura arriba para equilibrar.',corazon:'Un poco de flequillo o volumen frontal equilibra la frente amplia.',diamante:'Textura arriba y laterales prolijos destacan sin acentuar los pómulos.'},HT={'liso-fino':'Con cabello liso y fino rinden los cortes cortos con textura.','liso-grueso':'Tu cabello grueso aguanta bien degradados y formas definidas.',ondulado:'La ondulación luce con largo medio arriba y laterales controlados.',rizado:'Los rizos piden largo arriba para marcar la forma.',crespo:'El cabello crespo se ve muy bien con degradé limpio y volumen arriba.'},SKT={redondeado:'Con cráneo redondeado, evitá laterales demasiado altos.',alargado:'Con cráneo alargado no conviene dejar mucho largo arriba.',planonuca:'Con nuca plana, dejá más volumen atrás.',equilibrado:''},BT={ovalado:'Casi cualquier barba te queda: elegí según el mantenimiento que quieras.',redondo:'Una barba más larga en el mentón y bien perfilada estiliza tu rostro.',cuadrado:'Una barba corta y pareja respeta tu mandíbula.',alargado:'Una barba más ancha en los costados y corta en el mentón equilibra.',corazon:'Una barba llena en el mentón compensa la frente amplia.',diamante:'Una barba pareja y prolija suaviza los pómulos marcados.'};
+function faceUI(el,sw){const q=V.face,sel=(k,l,o)=>`<label>${l}<select data-k=${k}>${o.map(([v,t])=>`<option value=${v} ${q[k]===v?'selected':''}>${t}</option>`).join('')}</select></label>`;
+ el.innerHTML=sw+`<h3 style='font-size:1.4rem;margin:0 0 12px'>Elegí tus rasgos</h3><div class=two>${sel('f','Forma de rostro',FACE)}${sel('s','Forma de cráneo',SKULL)}${sel('h','Tipo de cabello',HAIR)}${sel('b','¿Usás barba?',[['no','No'],['corta','Corta'],['full','Full']])}</div><div class=row><button class=btn data-a=facego>Ver mis cortes</button></div><small class=mu>Son guías de estilo, no una regla: el barbero lo ajusta mirándote en persona.</small><div id=fres aria-live=polite></div>`;if(q.go)faceRes()}
+function faceRes(){const q=V.face,sc={},add=w=>Object.entries(w||{}).forEach(([k,v])=>sc[k]=(sc[k]||0)+v);add(FW[q.f]);add(SW[q.s]);add(HW[q.h]);
+ const l=S.items.filter(i=>i.pub&&sty(i.sid).cat==='corte'&&i.sid!=9).map(i=>({i,n:sc[i.sid]||0})).sort((a,b)=>b.n-a.n).slice(0,3),bs=q.b==='full'?14:q.b==='corta'?13:0,bi=bs?S.items.filter(i=>i.pub&&i.sid===bs):[];
+ const cd=(i,t)=>`<button class=card data-a=open data-id=${i.id}><div class=ph style='--h:${i.h}' role=img aria-label='Foto de demostración: ${esc(i.t)}'>${t}</div><div class=cap><b>${esc(i.t)}</b><small>${esc(sty(i.sid).name)}</small></div></button>`;
+ $('#fres').innerHTML=`<h3 style='font-size:1.4rem;margin:18px 0 6px'>Cortes sugeridos para vos</h3><p>${esc([TIP[q.f],SKT[q.s],HT[q.h]].filter(Boolean).join(' '))}</p><div class=grid>${l.map(({i},k)=>cd(i,['Muy recomendado','Recomendado','Para probar'][k])).join('')}</div>${bs?`<h3 style='font-size:1.2rem;margin:18px 0 6px'>Y para tu barba</h3><p>${esc(BT[q.f]||'')}</p><div class=grid>${bi.map(i=>cd(i,'Barba')).join('')||'<p class=mu>Todavía no hay publicaciones de barba.</p>'}</div>`:''}`;imgs($('#fres'))}
+const _q0=drawQz;
+drawQz=function(){const el=$('#qz');if(!el)return;const sw=`<div class=row style='margin-bottom:14px'><button class=chip data-a=qm data-v=life aria-pressed=${V.qm!=='face'}>Por tu estilo (3 preguntas)</button><button class=chip data-a=qm data-v=face aria-pressed=${V.qm==='face'}>Por tu rostro y cabello</button></div>`;if(V.qm==='face')faceUI(el,sw);else{_q0();el.insertAdjacentHTML('afterbegin',sw)}imgs(el)};
+function fillSid(sel){const c=$('#icat').value;$('#isid').innerHTML=S.styles.filter(s=>s.cat===c).map(s=>`<option value=${s.id} ${s.id==sel?'selected':''}>${esc(s.name)}</option>`).join('')}
+function itemForm(id){const i=id?S.items.find(x=>x.id==id):{},cat=i.sid?sty(i.sid).cat:'corte';
+ dopen(`<h2>${id?'Editar':'Nueva'} publicación</h2><form data-f=item class=stack novalidate><input type=hidden name=id value='${id||''}'><label>Título<input name=t maxlength=140 value='${esc(i.t||'')}'></label><small class=err id=e-t></small><label>Categoría<select name=cat id=icat>${CATS.map(([k,l])=>`<option value=${k} ${k===cat?'selected':''}>${l}</option>`).join('')}</select></label><label>Estilo<select name=sid id=isid></select></label><label>Estilo nuevo (opcional)<input name=newstyle maxlength=80 placeholder='Ej: Barba candado'></label><label>Descripción<textarea name=d rows=2 maxlength=2000>${esc(i.d||'')}</textarea></label><label>Etiquetas (separadas por coma)<input name=tags value='${esc((i.tags||[]).join(', '))}'></label><label>Imagen (JPG, PNG o WebP, máx. 5 MB)<input type=file name=img accept='image/jpeg,image/png,image/webp'></label><small class=err id=e-img></small>${i.img?`<img src='${i.img}' alt='Imagen actual' style='max-width:120px;border-radius:8px'>`:''}<label><input type=checkbox name=pub ${i.pub?'checked':''} style='width:auto'> Publicar en la galería</label><div class=row><button class=btn>Guardar</button><button type=button class='btn ghost' data-a=close>Cancelar</button></div></form>`);fillSid(i.sid)}
+P.portfolio=()=>`<div class=row style='margin-bottom:12px'><button class=btn data-a=inew>Nueva publicación</button><span class=mu>Los borradores nunca aparecen en la galería pública.</span></div><ul class=list>${S.items.map(i=>{const s=sty(i.sid);return `<li><div class=sw style='--h:${i.h};${i.img?'background:center/cover url('+i.img+')':''}'></div><div class=gr><b>${esc(i.t)}</b><br><span class=mu>${esc(CATN[s.cat])}: ${esc(s.name)}</span></div><span class='bd ${i.pub?'on':''}'>${i.pub?'Publicado':'Borrador'}</span><div class=acts><button class='btn sm ghost' data-a=iedit data-id=${i.id}>Editar</button><button class='btn sm ghost' data-a=pubtog data-id=${i.id}>${i.pub?'Despublicar':'Publicar'}</button><button class='btn sm ghost' data-a=idel data-id=${i.id}>Borrar</button></div></li>`}).join('')}</ul>`;
+Object.assign(A,{cat(d){V.cat=d.v;V.s='';drawGallery()},reset(){V.s='';V.q='';V.cat='';const q=$('#q');if(q)q.value='';drawGallery()},qm(d){V.qm=d.v;drawQz()},facego(){const q=V.face;if(!q.f||!q.h)return toast('Elegí al menos tu rostro y tu tipo de cabello.',1);q.go=1;faceRes()},inew(){itemForm()},iedit(d){itemForm(+d.id)},idel(d){ask('¿Borrar esta publicación?',()=>{S.items=S.items.filter(x=>x.id!=d.id);V.fav.delete(+d.id);toast('Publicación borrada.');render()})},pubtog(d){const i=S.items.find(x=>x.id==d.id);if(!i.pub&&!i.img&&!i.demo)return toast('Agregá una imagen antes de publicar.',1);i.pub=!i.pub;toast(i.pub?'Publicado en la galería.':'Pasó a borrador.');render()}});
+Object.assign(F,{item(f){const d=Object.fromEntries(new FormData(f)),file=f.img.files[0],ex=S.items.find(x=>x.id===+d.id),bad=m=>{$('#e-img').textContent=m};
+ $('#e-t').textContent=$('#e-img').textContent='';
+ if(!d.t.trim()){$('#e-t').textContent='Ingresá un título.';return}
+ if(file){if(!['image/jpeg','image/png','image/webp'].includes(file.type))return bad('Formato no permitido. Usá JPG, PNG o WebP.');if(file.size>5242880)return bad('La imagen supera los 5 MB.')}
+ if(d.pub&&!file&&!(ex&&(ex.img||ex.demo)))return bad('Agregá una imagen antes de publicar.');
+ const save=img=>{let sid=+d.sid;if(d.newstyle&&d.newstyle.trim()){const nm=d.newstyle.trim(),f2=S.styles.find(s=>s.cat===d.cat&&s.name.toLowerCase()===nm.toLowerCase());sid=f2?f2.id:(S.styles.push({id:++seq,name:nm,cat:d.cat}),seq)}
+  const it=ex||(S.items.unshift({id:++seq,h:Math.floor(Math.random()*360)}),S.items[0]);
+  Object.assign(it,{t:d.t.trim(),sid,d:d.d,tags:d.tags.split(',').map(s=>s.trim()).filter(Boolean),pub:!!d.pub});if(img)it.img=img;
+  dlg.close();toast(ex?'Publicación actualizada.':'Publicación creada.');render()};
+ if(file){const r=new FileReader();r.onload=()=>save(r.result);r.readAsDataURL(file)}else save(null)}});
+document.addEventListener('change',e=>{const t=e.target;if(t.id==='icat')fillSid();if(t.dataset&&t.dataset.k)V.face[t.dataset.k]=t.value});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b&&A[b.dataset.a])A[b.dataset.a](b.dataset,b)});
+document.addEventListener('submit',e=>{const f=e.target.closest('form[data-f]');if(f){e.preventDefault();F[f.dataset.f](f)}});
+document.addEventListener('input',e=>{if(e.target.id==='q'){V.q=e.target.value;drawGallery()}if(e.target.id==='cq')drawClients()});
+render();
+</script>
+</body>
+</html>

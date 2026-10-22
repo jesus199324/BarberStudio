@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    # Formato JDBC, ej: jdbc:postgresql://HOST/DB?sslmode=require  (usuario y clave van en DB_USER / DB_PASSWORD)
+    hikari:
+      maximum-pool-size: 5
+      max-lifetime: 300000        # menor que el cierre por inactividad de la base gratuita
+      connection-timeout: 30000
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+app:
+  bootstrap:
+    # Se usan UNA sola vez, cuando la base está vacía, para crear tu barbería y tu usuario dueño.
+    shop-name: ${BOOTSTRAP_SHOP_NAME:}
+    shop-slug: ${BOOTSTRAP_SHOP_SLUG:}
+    whatsapp: ${BOOTSTRAP_WHATSAPP:}
+    owner-email: ${BOOTSTRAP_OWNER_EMAIL:}
+    owner-password: ${BOOTSTRAP_OWNER_PASSWORD:}
+    barber-name: ${BOOTSTRAP_BARBER_NAME:}

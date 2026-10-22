@@ -1,0 +1,34 @@
+# Blueprint de Render (plan gratuito). Verificá los planes vigentes en https://render.com/pricing
+services:
+  - type: web
+    name: barber-studio-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: JWT_SECRET
+        generateValue: true
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: ALLOWED_ORIGINS        # la URL de tu sitio en Netlify, ej: https://mi-barberia.netlify.app
+        sync: false
+      - key: DB_URL                 # jdbc:postgresql://HOST/DB?sslmode=require (desde Neon)
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: BOOTSTRAP_SHOP_NAME
+        sync: false
+      - key: BOOTSTRAP_BARBER_NAME
+        sync: false
+      - key: BOOTSTRAP_WHATSAPP     # formato +59899123456
+        sync: false
+      - key: BOOTSTRAP_OWNER_EMAIL
+        sync: false
+      - key: BOOTSTRAP_OWNER_PASSWORD
+        sync: false
