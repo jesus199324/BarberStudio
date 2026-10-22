@@ -48,10 +48,31 @@
 
   <build>
     <plugins>
+      <!-- Plugin existente de Spring Boot -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
-        <configuration><excludes><exclude><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId></exclude></excludes></configuration>
+        <configuration>
+          <excludes>
+            <exclude>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+            </exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
+      <!-- NUEVO: Plugin de Surefire configurado para deshabilitar el Rate Limit -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+        <configuration>
+          <systemPropertyVariables>
+            <app.rate-limit.capacity>100000</app.rate-limit.capacity>
+            <app.rate-limit.tokens-per-minute>100000</app.rate-limit.tokens-per-minute>
+          </systemPropertyVariables>
+        </configuration>
       </plugin>
     </plugins>
   </build>
