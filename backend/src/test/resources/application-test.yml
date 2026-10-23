@@ -6,5 +6,4 @@ app:
   storage:
     local-dir: ./target/test-uploads
   rate-limit:
-    capacity: 100000
-    tokens-per-minute: 100000
+    enabled: false
