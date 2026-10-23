@@ -33,6 +33,9 @@ async function api(path, o = {}) {
     const x = new Error('No se pudo conectar con el servidor. Si recién lo abriste, esperá un minuto y volvé a intentar.'); x.network = true; throw x;
   }
   if (r.status === 204) return null;
+  if ([502, 503, 504].includes(r.status)) {   // el servidor gratuito se duerme: Netlify responde así mientras despierta
+    const x = new Error('El servidor está despertando. Esperá un momento…'); x.network = true; throw x;
+  }
   const t = await r.text(); let d = null; try { d = t ? JSON.parse(t) : null; } catch (e) { /* no era JSON */ }
   if (!r.ok) {
     const x = new Error((d && d.errors && Object.values(d.errors)[0]) || (d && d.detail) || ('Error ' + r.status));
@@ -40,8 +43,8 @@ async function api(path, o = {}) {
   }
   return d;
 }
-async function retry(fn, n = 3) {
-  for (let i = 0; ; i++) { try { return await fn(); } catch (e) { if (!e.network || i >= n) throw e; await new Promise(r => setTimeout(r, 4000)); } }
+async function retry(fn, n = 10) {
+  for (let i = 0; ; i++) { try { return await fn(); } catch (e) { if (!e.network || i >= n) throw e; await new Promise(r => setTimeout(r, 5000)); } }
 }
 
 const S = { mode: 'public', shop: null, services: [], barbers: [], styles: [], items: [], list: [], me: null, meChecked: false, cat: '', sty: '', q: '', loading: true, err: null, ref: null };
