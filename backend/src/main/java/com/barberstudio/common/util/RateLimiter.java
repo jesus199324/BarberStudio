@@ -2,6 +2,7 @@ package com.barberstudio.common.util;
 
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -17,8 +18,15 @@ public class RateLimiter {
     }
 
     private final ConcurrentHashMap<String, Window> windows = new ConcurrentHashMap<>();
+    private final boolean enabled;
+
+    /** app.rate-limit.enabled=false lo apaga (solo se usa en el perfil de pruebas). */
+    public RateLimiter(@Value("${app.rate-limit.enabled:true}") boolean enabled) {
+        this.enabled = enabled;
+    }
 
     public boolean allow(String key, int max, Duration period) {
+        if (!enabled) return true;
         long now = System.currentTimeMillis();
         if (windows.size() > 10_000) windows.clear();
         boolean[] ok = {false};
