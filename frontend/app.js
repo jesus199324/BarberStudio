@@ -71,7 +71,7 @@ function header() {
 function render() {
   S.mode = location.hash.startsWith('#/panel') ? 'panel' : 'public';
   $('#app').innerHTML = header() + `<main>${S.mode === 'public' ? pubHTML() : panelShell()}</main>` + (S.mode === 'public' && S.shop ? footer() : '');
-  if (S.mode === 'public' && !S.loading && !S.err) { renderBook(); drawGallery(); }
+  if (S.mode === 'public' && !S.loading && !S.err) { renderBook(); drawGallery(); drawQz(); }
   if (S.mode === 'panel') loadPanel();
 }
 
@@ -91,6 +91,7 @@ function pubHTML() {
     ? `<ul class="svc">${S.services.map(s => `<li><span>${esc(s.name)}</span><span class="dots"></span><b>${money(s.price)}</b><small>${s.durationMinutes} min</small></li>`).join('')}</ul>`
     : '<div class="empty">Muy pronto vas a ver acá los servicios y precios.</div>'}</section>
  ${S.barbers.length ? `<section id="equipo"><h2>El equipo</h2><div class="opts">${S.barbers.map(b => `<div class="opt"><b>${esc(b.name)}</b>${b.specialties ? `<span>${esc(b.specialties)}</span>` : ''}${b.bio ? `<span>${esc(b.bio)}</span>` : ''}</div>`).join('')}</div></section>` : ''}
+ ${S.items.length ? `<section id="encontrar"><h2>Encontrá tu corte</h2><div class="qz" id="qz"></div></section>` : ''}
  <section id="reservar"><h2>Reservá tu turno</h2><div id="book"></div></section>
  <section id="portfolio"><h2>Portfolio</h2><div class="row"><input id="q" type="search" placeholder="Buscar por nombre o etiqueta" aria-label="Buscar" style="max-width:280px" value="${esc(S.q)}"><button class="btn ghost" data-a="reset">Restablecer filtros</button></div><div id="chips" class="row" style="margin-top:10px"></div><div id="grid" class="grid"></div></section>`;
 }
@@ -170,17 +171,17 @@ async function loadSlots() {
 /* ---- portfolio público ---- */
 const styleOf = id => S.styles.find(s => s.id === id);
 const coverAlt = i => ((i.images.find(x => x.cover) || i.images[0] || {}).altText) || i.title;
-const card = i => `<button class="card" data-a="open" data-id="${i.id}">${i.coverUrl
+const card = i => `<div class="cw"><button class="heart" data-a="fav" data-id="${i.id}" aria-pressed="${S.fav.has(i.id)}" aria-label="Favorito: ${esc(i.title)}">♥</button><button class="card" data-a="open" data-id="${i.id}">${i.coverUrl
   ? `<img class="pic" loading="lazy" src="${esc(imgUrl(i.coverUrl))}" alt="${esc(coverAlt(i))}">`
-  : `<div class="ph" style="--h:${(i.id * 47) % 360}" role="img" aria-label="${esc(i.title)}"></div>`}<div class="cap"><b>${esc(i.title)}</b><small>${esc(i.style.name)}</small></div></button>`;
+  : `<div class="ph" style="--h:${(i.id * 47) % 360}" role="img" aria-label="${esc(i.title)}"></div>`}<div class="cap"><b>${esc(i.title)}</b><small>${esc(i.style.name)}</small></div></button></div>`;
 
 function drawGallery() {
   if (!$('#chips')) return;
   const sub = S.cat ? S.styles.filter(s => s.category === S.cat && S.items.some(i => i.style.id === s.id)) : [];
-  $('#chips').innerHTML = [['', 'Todo'], ...CATS].map(([v, l]) => `<button class="chip" data-a="cat" data-v="${v}" aria-pressed="${S.cat === v}">${l}</button>`).join('')
+  $('#chips').innerHTML = [['', 'Todo'], ...CATS, ['FAV', '♥ Favoritos (' + S.fav.size + ')']].map(([v, l]) => `<button class="chip" data-a="cat" data-v="${v}" aria-pressed="${S.cat === v}">${l}</button>`).join('')
     + (sub.length ? '<span style="width:100%"></span>' + sub.map(s => `<button class="chip" data-a="sty" data-v="${s.id}" aria-pressed="${String(S.sty) === String(s.id)}">${esc(s.name)}</button>`).join('') : '');
   const q = S.q.trim().toLowerCase();
-  S.list = S.items.filter(i => (!S.cat || (styleOf(i.style.id) || {}).category === S.cat) && (!S.sty || i.style.id == S.sty)
+  S.list = S.items.filter(i => (!S.cat || (S.cat === 'FAV' ? S.fav.has(i.id) : (styleOf(i.style.id) || {}).category === S.cat)) && (!S.sty || i.style.id == S.sty)
     && (i.title.toLowerCase().includes(q) || i.tags.some(t => t.includes(q))));
   $('#grid').innerHTML = S.list.length ? S.list.map(card).join('')
     : `<div class="empty" style="grid-column:1/-1">${S.items.length ? 'No hay publicaciones con esos filtros.' : 'Muy pronto vas a ver acá los trabajos.'}</div>`;
@@ -442,7 +443,7 @@ const F = {
     B.busy = true; renderBook();
     try {
       B.done = await api(`/api/public/${SLUG}/bookings`, { method: 'POST', body: { serviceId: B.svc, barberId: B.barber, startAt: s.startAt, name: f.name.trim(), whatsapp: f.whatsapp.trim(), birthDate: f.birth || null, marketingOptIn: !!f.optin, notes: f.notes || null, portfolioItemId: S.ref ? S.ref.id : null, website: f.website || '' } });
-      B.busy = false; S.ref = null; renderBook(); const el = $('#reservar'); if (el) el.scrollIntoView({ behavior: 'smooth' });
+      B.busy = false; S.ref = null; renderBook(); burst(); const el = $('#reservar'); if (el) el.scrollIntoView({ behavior: 'smooth' });
     } catch (x) {
       B.busy = false; toast(x.message, 1);
       if (x.status === 409) { B.slot = null; await loadSlots(); loadDays(); } else renderBook();
@@ -551,5 +552,79 @@ document.addEventListener('pointermove', e => {
   if (hero) { const r = hero.getBoundingClientRect(); hero.style.setProperty('--mx', (e.clientX - r.left) + 'px'); hero.style.setProperty('--my', (e.clientY - r.top) + 'px'); }
   if (document.documentElement.dataset.theme === 'street') { const s = document.documentElement.style; s.setProperty('--cx', e.clientX + 'px'); s.setProperty('--cy', e.clientY + 'px'); }
 });
+
+/* ============ Extras: favoritos, test de cortes, sugerencias por rostro, confeti ============ */
+try { S.fav = new Set(JSON.parse(localStorage.getItem('fav') || '[]')); } catch (e) { S.fav = new Set(); }
+const saveFav = () => { try { localStorage.setItem('fav', JSON.stringify([...S.fav])); } catch (e) { /* ok */ } };
+const Q = { mode: 'life', step: 0, ans: [], face: {} };
+// Las reglas usan el identificador (slug) del estilo, así funcionan con tus publicaciones reales.
+const QZ = [
+  { q: '¿Cómo llevás el pelo?', o: [['Corto y prolijo', ['taper-fade', 'low-fade', 'mid-fade', 'corte-clasico']], ['Con contraste y marcado', ['high-fade', 'mohicano', 'crop']], ['Natural, con volumen o rulos', ['cortes-con-rulos', 'corte-clasico']]] },
+  { q: '¿Cuánto mantenimiento querés?', o: [['Poco: cada 4 a 6 semanas', ['corte-clasico', 'mid-fade', 'cortes-con-rulos']], ['Cada 2 o 3 semanas', ['taper-fade', 'low-fade', 'mid-fade', 'high-fade']], ['Me gusta cambiar seguido', ['mohicano', 'crop', 'high-fade']]] },
+  { q: '¿Qué buscás con el corte?', o: [['Algo clásico y formal', ['corte-clasico', 'taper-fade']], ['Moderno y urbano', ['low-fade', 'mid-fade', 'high-fade', 'mohicano']], ['Cómodo para todos los días', ['crop', 'cortes-con-rulos', 'mid-fade']]] }
+];
+const FACE = [['', 'Elegí…'], ['ovalado', 'Ovalado'], ['redondo', 'Redondo'], ['cuadrado', 'Cuadrado'], ['alargado', 'Alargado'], ['corazon', 'Corazón (frente amplia)'], ['diamante', 'Diamante (pómulos marcados)']];
+const SKULL = [['', 'Elegí…'], ['redondeado', 'Redondeado (más ancho que largo)'], ['alargado', 'Alargado (más largo que ancho)'], ['equilibrado', 'Equilibrado'], ['planonuca', 'Nuca plana']];
+const HAIR = [['', 'Elegí…'], ['liso-fino', 'Liso y fino'], ['liso-grueso', 'Liso y grueso'], ['ondulado', 'Ondulado'], ['rizado', 'Rizado'], ['crespo', 'Afro o crespo']];
+const FW = { ovalado: { 'taper-fade': 2, 'low-fade': 2, 'mid-fade': 2, 'corte-clasico': 2, crop: 2, mohicano: 1 }, redondo: { 'high-fade': 3, 'mid-fade': 2, mohicano: 2, 'taper-fade': 1 }, cuadrado: { crop: 3, 'corte-clasico': 2, 'low-fade': 2, 'taper-fade': 1 }, alargado: { 'low-fade': 3, crop: 3, 'cortes-con-rulos': 2, 'corte-clasico': 1 }, corazon: { 'corte-clasico': 2, 'cortes-con-rulos': 3, 'low-fade': 2, crop: 2 }, diamante: { crop: 2, 'cortes-con-rulos': 2, 'taper-fade': 2, 'mid-fade': 1 } };
+const SW = { redondeado: { 'taper-fade': 1, 'mid-fade': 1, 'high-fade': 1 }, alargado: { 'low-fade': 1, crop: 1, 'cortes-con-rulos': 1 }, equilibrado: { 'taper-fade': 1, 'low-fade': 1, 'mid-fade': 1, 'corte-clasico': 1 }, planonuca: { 'cortes-con-rulos': 2, 'corte-clasico': 1, mohicano: 1 } };
+const HW = { 'liso-fino': { crop: 2, 'corte-clasico': 1, 'low-fade': 1 }, 'liso-grueso': { 'taper-fade': 2, 'mid-fade': 2, 'high-fade': 1, mohicano: 1 }, ondulado: { 'corte-clasico': 2, 'taper-fade': 1, 'mid-fade': 1 }, rizado: { 'cortes-con-rulos': 3, 'low-fade': 1 }, crespo: { 'cortes-con-rulos': 3, 'high-fade': 1, 'taper-fade': 1 } };
+const TIP = { ovalado: 'Tu rostro es muy versátil: casi cualquier corte te funciona.', redondo: 'Volumen arriba y laterales bajos alargan visualmente tu rostro.', cuadrado: 'Líneas limpias y algo de textura suavizan la mandíbula marcada.', alargado: 'Conviene volumen en los laterales y poca altura arriba para equilibrar.', corazon: 'Un poco de flequillo o volumen frontal equilibra la frente amplia.', diamante: 'Textura arriba y laterales prolijos destacan sin acentuar los pómulos.' };
+const HT = { 'liso-fino': 'Con cabello liso y fino rinden los cortes cortos con textura.', 'liso-grueso': 'Tu cabello grueso aguanta bien degradados y formas definidas.', ondulado: 'La ondulación luce con largo medio arriba y laterales controlados.', rizado: 'Los rizos piden largo arriba para marcar la forma.', crespo: 'El cabello crespo se ve muy bien con degradé limpio y volumen arriba.' };
+const SKT = { redondeado: 'Con cráneo redondeado, evitá laterales demasiado altos.', alargado: 'Con cráneo alargado no conviene dejar mucho largo arriba.', planonuca: 'Con nuca plana, dejá más volumen atrás.', equilibrado: '' };
+const BT = { ovalado: 'Casi cualquier barba te queda: elegí según el mantenimiento que quieras.', redondo: 'Una barba más larga en el mentón y bien perfilada estiliza tu rostro.', cuadrado: 'Una barba corta y pareja respeta tu mandíbula.', alargado: 'Una barba más ancha en los costados y corta en el mentón equilibra.', corazon: 'Una barba llena en el mentón compensa la frente amplia.', diamante: 'Una barba pareja y prolija suaviza los pómulos marcados.' };
+
+const isCut = i => (styleOf(i.style.id) || {}).category === 'CORTE' && i.style.slug !== 'cortes-infantiles';
+const recCard = (i, label) => `<div>${card(i)}<small class="mu">${esc(label)}</small></div>`;
+const noMatch = '<div class="empty">Todavía no hay publicaciones para sugerirte. Escribinos por WhatsApp y te asesoramos.</div>';
+
+function lifeHTML() {
+  if (Q.step < QZ.length) {
+    const q = QZ[Q.step];
+    return `<div class="bar-p"><i style="width:${Q.step / QZ.length * 100}%"></i></div><h3 class="st">${q.q}</h3><div class="opts">${q.o.map((o, i) => `<button class="btn" data-a="qa" data-i="${i}">${o[0]}</button>`).join('')}</div><small class="mu">Pregunta ${Q.step + 1} de ${QZ.length}</small>`;
+  }
+  const list = S.items.filter(isCut).map(i => ({ i, n: Q.ans.filter(a => a.includes(i.style.slug)).length })).sort((a, b) => b.n - a.n).slice(0, 3);
+  return `<div class="bar-p"><i style="width:100%"></i></div><h3 class="st">Estos cortes van con vos</h3><div class="grid">${list.map(({ i, n }) => recCard(i, `Coincidencia: ${n} de ${QZ.length}`)).join('') || noMatch}</div><div class="row" style="margin-top:12px"><button class="btn ghost" data-a="qr">Volver a empezar</button></div>`;
+}
+
+function faceHTML() {
+  const q = Q.face, sel = (k, l, o) => `<label>${l}<select data-k="${k}">${o.map(([v, t]) => `<option value="${v}" ${q[k] === v ? 'selected' : ''}>${t}</option>`).join('')}</select></label>`;
+  return `<h3 class="st" style="margin-top:0">Elegí tus rasgos</h3><div class="two">${sel('f', 'Forma de rostro', FACE)}${sel('s', 'Forma de cráneo', SKULL)}${sel('h', 'Tipo de cabello', HAIR)}${sel('b', '¿Usás barba?', [['no', 'No'], ['corta', 'Corta'], ['full', 'Full']])}</div>
+ <div class="row"><button class="btn" data-a="facego">Ver mis cortes</button></div><small class="mu">Son guías de estilo, no una regla: el barbero lo ajusta mirándote en persona.</small>${q.go ? faceRes() : ''}`;
+}
+
+function faceRes() {
+  const q = Q.face, sc = {}, add = w => Object.entries(w || {}).forEach(([k, v]) => { sc[k] = (sc[k] || 0) + v; });
+  add(FW[q.f]); add(SW[q.s]); add(HW[q.h]);
+  const cuts = S.items.filter(isCut).map(i => ({ i, n: sc[i.style.slug] || 0 })).sort((a, b) => b.n - a.n).slice(0, 3);
+  const bs = q.b === 'full' ? 'barba-full' : q.b === 'corta' ? 'barba-perfilada' : '', beard = bs ? S.items.filter(i => i.style.slug === bs) : [];
+  return `<h3 class="st">Cortes sugeridos para vos</h3><p>${esc([TIP[q.f], SKT[q.s], HT[q.h]].filter(Boolean).join(' '))}</p>
+ <div class="grid">${cuts.map(({ i }, k) => recCard(i, ['Muy recomendado', 'Recomendado', 'Para probar'][k])).join('') || noMatch}</div>
+ ${bs ? `<h3 class="st">Y para tu barba</h3><p>${esc(BT[q.f] || '')}</p><div class="grid">${beard.map(i => recCard(i, 'Barba')).join('') || '<div class="empty">Todavía no hay publicaciones de barba.</div>'}</div>` : ''}`;
+}
+
+function drawQz() {
+  const el = $('#qz'); if (!el) return;
+  el.innerHTML = `<div class="row" style="margin-bottom:14px"><button class="chip" data-a="qm" data-v="life" aria-pressed="${Q.mode !== 'face'}">Por tu estilo (3 preguntas)</button><button class="chip" data-a="qm" data-v="face" aria-pressed="${Q.mode === 'face'}">Por tu rostro y cabello</button></div>${Q.mode === 'face' ? faceHTML() : lifeHTML()}`;
+}
+
+function burst() {
+  if (matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const c = ['#ff5d6c', '#7c5cff', '#19c2ff', '#ffd166', '#2ee59d'];
+  for (let i = 0; i < 28; i++) {
+    const p = document.createElement('i'); p.className = 'pop'; p.style.cssText = `left:50%;top:60%;background:${c[i % 5]}`; document.body.append(p);
+    const a = Math.random() * Math.PI * 2, r = 80 + Math.random() * 180;
+    p.animate([{ transform: 'translate(0,0) rotate(0)', opacity: 1 }, { transform: `translate(${Math.cos(a) * r}px,${Math.sin(a) * r + 120}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }], { duration: 900 + Math.random() * 500, easing: 'cubic-bezier(.2,.7,.3,1)' }).onfinish = () => p.remove();
+  }
+}
+
+Object.assign(A, {
+  fav(d) { const id = +d.id; if (S.fav.has(id)) S.fav.delete(id); else S.fav.add(id); saveFav(); toast(S.fav.has(id) ? 'Guardado en favoritos.' : 'Quitado de favoritos.'); drawGallery(); },
+  qm(d) { Q.mode = d.v; drawQz(); },
+  qa(d) { Q.ans.push(QZ[Q.step].o[d.i][1]); Q.step++; drawQz(); },
+  qr() { Q.step = 0; Q.ans = []; drawQz(); },
+  facego() { if (!Q.face.f || !Q.face.h) { toast('Elegí al menos tu rostro y tu tipo de cabello.', true); return; } Q.face.go = true; drawQz(); }
+});
+document.addEventListener('change', e => { const t = e.target; if (t.dataset && t.dataset.k) Q.face[t.dataset.k] = t.value; });
 
 loadPublic();
