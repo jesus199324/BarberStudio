@@ -33,6 +33,8 @@ management:
 
 app:
   allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173}   # CORS + verificacion de Origin
+  rate-limit:
+    enabled: true                       # se desactiva solo en pruebas
   jwt:
     secret: ${JWT_SECRET:}              # minimo 32 caracteres; sin valor la app no arranca
     expiration-minutes: 120
@@ -40,5 +42,10 @@ app:
     secure: ${COOKIE_SECURE:true}
     same-site: ${COOKIE_SAME_SITE:Lax}
   storage:
+    provider: ${STORAGE_PROVIDER:local}   # local (desarrollo) | cloudinary (produccion)
     local-dir: ${UPLOAD_DIR:./uploads}
     public-base-url: ${PUBLIC_BASE_URL:}
+  cloudinary:
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+    api-key: ${CLOUDINARY_API_KEY:}
+    api-secret: ${CLOUDINARY_API_SECRET:}
