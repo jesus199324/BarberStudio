@@ -5,12 +5,12 @@
 # Con este proxy el navegador habla siempre con Netlify (mismo origen): sin problemas de CORS ni de cookies.
 [[redirects]]
   from = "/api/*"
-  to = "barber-studio-api.onrender.com"
+  to = "https://barber-studio-api.onrender.com/api/:splat"
   status = 200
   force = true
 
 [[redirects]]
   from = "/uploads/*"
-  to = "barber-studio-api.onrender.com"
+  to = "https://barber-studio-api.onrender.com/uploads/:splat"
   status = 200
   force = true
