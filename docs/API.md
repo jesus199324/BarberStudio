@@ -57,3 +57,20 @@ Auth: cookie `access_token` (HttpOnly) emitida por `/api/auth/login`. Fechas en 
 
 ## Reglas de disponibilidad
 Horario del barbero (excepción de la fecha, o semanal) − descanso − cierres generales − licencias del barbero − turnos existentes (más el tiempo de preparación). Los inicios se alinean al intervalo configurado y deben entrar completos antes del fin de la jornada. Un cierre general de día completo deja a todos sin disponibilidad; una licencia individual solo afecta a ese barbero. La base de datos impide el solapamiento por barbero aunque dos clientes reserven a la vez.
+
+---
+# Etapa 2 (parte 1)
+| Cambio | Detalle |
+|---|---|
+| Clientes | `ClientRequest/Response` incluyen `birthDate` y `marketingOptIn` (autorización para recibir promociones; se puede revocar) |
+| Portada | `POST /settings/logo` (multipart `file`, solo dueño) y `DELETE /settings/logo`; `GET /public/{slug}/shop` devuelve `logoUrl` |
+| Migración | `V3__shop_cover_image.sql` agrega `logo_url` y `logo_key` a `barbershop` |
+
+---
+# Etapa 2 (parte 2): footer y destacados
+| Cambio | Detalle |
+|---|---|
+| Ajustes | `instagramUrl`, `tiktokUrl`, `youtubeUrl`, `mapsUrl` (solo http/https), `neighborhood`, `city`, `hoursNote` |
+| Público | `GET /public/{slug}/shop` devuelve esos datos y `openingHours`, calculado con los horarios de los barberos activos |
+| Portfolio | `featured` y `sortOrder` en publicaciones; `POST /portfolio/{id}/feature` alterna el destacado. La galería pública muestra primero los destacados, luego por orden y fecha |
+| Migración | `V4__footer_and_featured.sql` |
