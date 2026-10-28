@@ -26,4 +26,11 @@ public class Barbershop extends BaseEntity {
     @Column(name = "min_notice_minutes") private int minNoticeMinutes = 60;
     @Column(name = "logo_url") private String logoUrl;
     @Column(name = "logo_key") private String logoKey;
+    @Column(name = "instagram_url") private String instagramUrl;
+    @Column(name = "tiktok_url") private String tiktokUrl;
+    @Column(name = "youtube_url") private String youtubeUrl;
+    @Column(name = "neighborhood") private String neighborhood;
+    @Column(name = "city") private String city;
+    @Column(name = "maps_url") private String mapsUrl;
+    @Column(name = "hours_note") private String hoursNote;
 }

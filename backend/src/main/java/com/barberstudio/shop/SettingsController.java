@@ -28,6 +28,9 @@ public class SettingsController {
         this.storage = storage;
     }
 
+    private static final String URL_RX = "^$|^https?://\\S+$";   // solo http(s): evita enlaces peligrosos como javascript:
+    private static final String URL_MSG = "El enlace debe empezar con http:// o https://";
+
     public record SettingsRequest(
         @NotBlank(message = "El nombre es obligatorio") @Size(max = 120) String name,
         @Size(max = 3000) String aboutText,
@@ -38,15 +41,25 @@ public class SettingsController {
         @NotNull @Min(0) @Max(120) Integer bufferMinutes,
         boolean autoConfirm,
         @NotNull @Min(1) @Max(365) Integer maxDaysAhead,
-        @NotNull @Min(0) @Max(10080) Integer minNoticeMinutes) {}
+        @NotNull @Min(0) @Max(10080) Integer minNoticeMinutes,
+        @Size(max = 300) @Pattern(regexp = URL_RX, message = URL_MSG) String instagramUrl,
+        @Size(max = 300) @Pattern(regexp = URL_RX, message = URL_MSG) String tiktokUrl,
+        @Size(max = 300) @Pattern(regexp = URL_RX, message = URL_MSG) String youtubeUrl,
+        @Size(max = 120) String neighborhood,
+        @Size(max = 120) String city,
+        @Size(max = 500) @Pattern(regexp = URL_RX, message = URL_MSG) String mapsUrl,
+        @Size(max = 300) String hoursNote) {}
 
     public record SettingsResponse(String name, String slug, String aboutText, String whatsapp, String address,
                                    String timezone, String currency, int slotMinutes, int bufferMinutes,
-                                   boolean autoConfirm, int maxDaysAhead, int minNoticeMinutes, String logoUrl) {
+                                   boolean autoConfirm, int maxDaysAhead, int minNoticeMinutes, String logoUrl,
+                                   String instagramUrl, String tiktokUrl, String youtubeUrl, String neighborhood,
+                                   String city, String mapsUrl, String hoursNote) {
         static SettingsResponse from(Barbershop b) {
             return new SettingsResponse(b.getName(), b.getSlug(), b.getAboutText(), b.getWhatsappE164(), b.getAddress(),
                 b.getTimezone(), b.getCurrency(), b.getSlotMinutes(), b.getBufferMinutes(), b.isAutoConfirm(),
-                b.getMaxDaysAhead(), b.getMinNoticeMinutes(), b.getLogoUrl());
+                b.getMaxDaysAhead(), b.getMinNoticeMinutes(), b.getLogoUrl(),
+                b.getInstagramUrl(), b.getTiktokUrl(), b.getYoutubeUrl(), b.getNeighborhood(), b.getCity(), b.getMapsUrl(), b.getHoursNote());
         }
     }
 
@@ -70,6 +83,13 @@ public class SettingsController {
         b.setAutoConfirm(r.autoConfirm());
         b.setMaxDaysAhead(r.maxDaysAhead());
         b.setMinNoticeMinutes(r.minNoticeMinutes());
+        b.setInstagramUrl(nz(r.instagramUrl()));
+        b.setTiktokUrl(nz(r.tiktokUrl()));
+        b.setYoutubeUrl(nz(r.youtubeUrl()));
+        b.setNeighborhood(nz(r.neighborhood()));
+        b.setCity(nz(r.city()));
+        b.setMapsUrl(nz(r.mapsUrl()));
+        b.setHoursNote(nz(r.hoursNote()));
         return SettingsResponse.from(shops.save(b));
     }
 
@@ -103,6 +123,8 @@ public class SettingsController {
         if (old != null) storage.delete(old);
         return SettingsResponse.from(b);
     }
+
+    private static String nz(String s) { return s == null || s.isBlank() ? null : s.trim(); }
 
     private Barbershop find() {
         return shops.findById(CurrentUser.shopId()).orElseThrow(() -> new NotFoundException("Barbería no encontrada."));
