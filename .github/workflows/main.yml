@@ -19,6 +19,9 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
-        
+
+    - name: Compatibilidad de Docker para Testcontainers
+      run: echo "api.version=1.44" >> ~/.docker-java.properties
+      
     - name: Build with Maven
       run: mvn -B package --file backend/pom.xml -Dapp.rate-limit.capacity=100000 -Dapp.rate-limit.tokens-per-minute=100000
