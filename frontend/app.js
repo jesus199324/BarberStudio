@@ -77,7 +77,21 @@ function render() {
 
 function footer() {
   const sh = S.shop;
-  return `<footer>${sh.address ? esc(sh.address) + '. ' : ''}<a href="${esc(sh.whatsappUrl)}" target="_blank" rel="noopener" style="color:inherit">WhatsApp</a>${CFG.instagram ? ` | <a href="${esc(CFG.instagram)}" target="_blank" rel="noopener" style="color:inherit">Instagram</a>` : ''}</footer>`;
+  const ic = {
+    instagram: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 015 5v10a5 5 0 01-5 5H7a5 5 0 01-5-5V7a5 5 0 015-5zm0 2a3 3 0 00-3 3v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H7zm5 3.5a4.5 4.5 0 110 9 4.5 4.5 0 010-9zm0 2a2.5 2.5 0 100 5 2.5 2.5 0 000-5zM17.5 6a1 1 0 110 2 1 1 0 010-2z"/></svg>',
+    tiktok: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.5 3c.4 2.3 1.8 3.8 4 4v3a7 7 0 01-4-1.3V15a6 6 0 11-6-6c.3 0 .7 0 1 .1v3.2a3 3 0 103 2.7V3h2z"/></svg>',
+    youtube: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 7.2a2.5 2.5 0 00-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 002.4 7.2C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 001.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 001.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8zM10 15V9l5.2 3L10 15z"/></svg>'
+  };
+  // Una red sin enlace configurado no aparece. Instagram usa el de config.js si todavía no cargaste uno en Ajustes.
+  const links = [['instagram', sh.instagramUrl || CFG.instagram, 'Instagram'], ['tiktok', sh.tiktokUrl, 'TikTok'], ['youtube', sh.youtubeUrl, 'YouTube']].filter(l => l[1]);
+  const hours = sh.openingHours || [];
+  const day = d => { const h = hours.find(x => x.weekday === d); return `<li><span>${WD[d]}</span><b>${h ? esc(h.open) + ' a ' + esc(h.close) : 'Cerrado'}</b></li>`; };
+  const place = [sh.address, [sh.neighborhood, sh.city].filter(Boolean).join(', ')].filter(Boolean);
+  return `<footer class="site-foot"><div class="fgrid">
+ ${links.length ? `<div><h3>Redes</h3><div class="socials">${links.map(([k, u, l]) => `<a href="${esc(u)}" target="_blank" rel="noopener" aria-label="${l}">${ic[k]}<span>${l}</span></a>`).join('')}</div></div>` : ''}
+ ${place.length || sh.mapsUrl ? `<div><h3>Ubicación</h3>${place.map(p => `<p>${esc(p)}</p>`).join('')}${sh.mapsUrl ? `<a class="btn sm ghost" href="${esc(sh.mapsUrl)}" target="_blank" rel="noopener">Cómo llegar</a>` : ''}</div>` : ''}
+ ${hours.length || sh.hoursNote ? `<div><h3>Horarios</h3><ul class="hrs">${[1, 2, 3, 4, 5, 6, 7].map(day).join('')}</ul>${sh.hoursNote ? `<p class="mu">${esc(sh.hoursNote)}</p>` : ''}</div>` : ''}
+ </div><p class="mu copy">${esc(sh.name)}</p></footer>`;
 }
 
 function pubHTML() {
@@ -171,7 +185,7 @@ async function loadSlots() {
 /* ---- portfolio público ---- */
 const styleOf = id => S.styles.find(s => s.id === id);
 const coverAlt = i => ((i.images.find(x => x.cover) || i.images[0] || {}).altText) || i.title;
-const card = i => `<div class="cw"><button class="heart" data-a="fav" data-id="${i.id}" aria-pressed="${S.fav.has(i.id)}" aria-label="Favorito: ${esc(i.title)}">♥</button><button class="card" data-a="open" data-id="${i.id}">${i.coverUrl
+const card = i => `<div class="cw ${i.featured ? 'feat' : ''}">${i.featured ? '<span class="ribbon">Destacado</span>' : ''}<button class="heart" data-a="fav" data-id="${i.id}" aria-pressed="${S.fav.has(i.id)}" aria-label="Favorito: ${esc(i.title)}">♥</button><button class="card" data-a="open" data-id="${i.id}">${i.coverUrl
   ? `<img class="pic" loading="lazy" src="${esc(imgUrl(i.coverUrl))}" alt="${esc(coverAlt(i))}">`
   : `<div class="ph" style="--h:${(i.id * 47) % 360}" role="img" aria-label="${esc(i.title)}"></div>`}<div class="cap"><b>${esc(i.title)}</b><small>${esc(i.style.name)}</small></div></button></div>`;
 
@@ -297,7 +311,7 @@ const T = {
     const [items, styles] = await Promise.all([api('/api/portfolio'), api('/api/styles')]); P.items = items; P.styles = styles;
     return `<div class="row" style="margin-bottom:12px"><button class="btn" data-a="pnewitem">Nueva publicación</button></div>
  <form data-f="style" class="row" style="margin-bottom:14px"><input name="name" placeholder="Nuevo estilo (ej: Barba candado)" aria-label="Nombre del estilo" style="max-width:260px"><select name="category" aria-label="Categoría" style="width:auto">${CATS.map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select><button class="btn sm ghost">Agregar estilo</button></form>
- ${items.length ? `<ul class="list">${items.map(i => `<li>${i.coverUrl ? `<img class="sw" style="object-fit:cover" src="${esc(imgUrl(i.coverUrl))}" alt="">` : '<div class="sw" style="--h:200"></div>'}<div class="gr"><b>${esc(i.title)}</b><br><span class="mu">${esc(i.style.name)}</span></div><span class="bd ${i.status === 'PUBLISHED' ? 'on' : ''}">${i.status === 'PUBLISHED' ? 'Publicado' : i.status === 'DRAFT' ? 'Borrador' : 'Archivado'}</span><div class="acts"><button class="btn sm ghost" data-a="iedit" data-id="${i.id}">Editar</button><button class="btn sm ghost" data-a="itog" data-id="${i.id}">${i.status === 'PUBLISHED' ? 'Despublicar' : 'Publicar'}</button><button class="btn sm ghost" data-a="idel" data-id="${i.id}">Borrar</button></div></li>`).join('')}</ul>` : '<div class="empty">Todavía no hay publicaciones. Los borradores nunca se ven en el sitio público.</div>'}
+ ${items.length ? `<ul class="list">${items.map(i => `<li>${i.coverUrl ? `<img class="sw" style="object-fit:cover" src="${esc(imgUrl(i.coverUrl))}" alt="">` : '<div class="sw" style="--h:200"></div>'}<div class="gr"><b>${esc(i.title)}</b><br><span class="mu">${esc(i.style.name)}</span></div><span class="bd ${i.status === 'PUBLISHED' ? 'on' : ''}">${i.status === 'PUBLISHED' ? 'Publicado' : i.status === 'DRAFT' ? 'Borrador' : 'Archivado'}</span>${i.featured ? '<span class="bd on">Destacado</span>' : ''}<div class="acts"><button class="btn sm ghost" data-a="ifeat" data-id="${i.id}">${i.featured ? 'Quitar destacado' : 'Destacar'}</button><button class="btn sm ghost" data-a="iedit" data-id="${i.id}">Editar</button><button class="btn sm ghost" data-a="itog" data-id="${i.id}">${i.status === 'PUBLISHED' ? 'Despublicar' : 'Publicar'}</button><button class="btn sm ghost" data-a="idel" data-id="${i.id}">Borrar</button></div></li>`).join('')}</ul>` : '<div class="empty">Todavía no hay publicaciones. Los borradores nunca se ven en el sitio público.</div>'}
  <p class="mu"><small>Las fotos se guardan en el servidor. En el plan gratuito de hosting conviene conectar Cloudinary antes de subir fotos definitivas (ver docs/DEPLOY.md).</small></p>`;
   },
 
@@ -309,6 +323,13 @@ const T = {
  <label>Dirección<input name="address" value="${esc(s.address || '')}"></label><label>Zona horaria<input name="timezone" value="${esc(s.timezone)}"></label>
  <label style="grid-column:1/-1">Presentación (se muestra en la portada)<textarea name="aboutText" rows="3">${esc(s.aboutText || '')}</textarea></label>
  ${n('slotMinutes', 'Intervalo entre turnos (minutos)', 5, 120)}${n('bufferMinutes', 'Tiempo de preparación entre turnos (minutos)', 0, 120)}${n('maxDaysAhead', 'Reservas hasta (días hacia adelante)', 1, 365)}${n('minNoticeMinutes', 'Aviso mínimo para reservar (minutos)', 0, 10080)}
+ <label>Barrio<input name="neighborhood" value="${esc(s.neighborhood || '')}"></label><label>Ciudad<input name="city" value="${esc(s.city || '')}"></label>
+ <label style="grid-column:1/-1">Enlace de Google Maps (para el botón "Cómo llegar")<input name="mapsUrl" placeholder="https://maps.app.goo.gl/..." value="${esc(s.mapsUrl || '')}"></label>
+ <label>Instagram (enlace)<input name="instagramUrl" placeholder="https://www.instagram.com/..." value="${esc(s.instagramUrl || '')}"></label>
+ <label>TikTok (enlace)<input name="tiktokUrl" placeholder="https://www.tiktok.com/@..." value="${esc(s.tiktokUrl || '')}"></label>
+ <label>YouTube (enlace)<input name="youtubeUrl" placeholder="https://www.youtube.com/@..." value="${esc(s.youtubeUrl || '')}"></label>
+ <label style="grid-column:1/-1">Nota de horarios (ej: Atención con reserva previa)<input name="hoursNote" value="${esc(s.hoursNote || '')}"></label>
+ <p class="mu" style="grid-column:1/-1"><small>Las redes sin enlace no se muestran. Los días y horarios del footer se calculan solos con el horario de tus barberos.</small></p>
  <label style="grid-column:1/-1;font-weight:400"><input type="checkbox" name="autoConfirm" ${s.autoConfirm ? 'checked' : ''} style="width:auto"> Confirmar automáticamente las reservas (si no, quedan pendientes hasta que las confirmes)</label>
  <div><button class="btn">Guardar ajustes</button></div></form><small class="err" id="e-f"></small>
  <h2 style="font-size:1.4rem;margin-top:28px">Imagen de portada (opcional)</h2>
@@ -420,7 +441,9 @@ function pform(id) {
  <label>${it && it.images.length ? 'Agregar otra imagen' : 'Imagen'} (JPG, PNG o WebP, máx. 5 MB)<input type="file" name="img" accept="image/jpeg,image/png,image/webp"></label>
  <label>Texto alternativo de la imagen (accesibilidad)<input name="alt" placeholder="Ej: Degradé bajo visto de costado"></label>
  ${it && it.images.length ? `<div class="thumbs">${it.images.map(m => `<img src="${esc(imgUrl(m.url))}" alt="${esc(m.altText)}">`).join('')}</div>` : ''}
- <label style="font-weight:400"><input type="checkbox" name="pub" ${it && it.status === 'PUBLISHED' ? 'checked' : ''} style="width:auto"> Publicar en el sitio</label>${btns('Guardar')}</form>`);
+ <label style="font-weight:400"><input type="checkbox" name="pub" ${it && it.status === 'PUBLISHED' ? 'checked' : ''} style="width:auto"> Publicar en el sitio</label>
+ <label style="font-weight:400"><input type="checkbox" name="feat" ${it && it.featured ? 'checked' : ''} style="width:auto"> Destacar este trabajo (aparece primero y con una cinta)</label>
+ <label>Orden (el número menor aparece primero)<input type="number" name="ord" step="1" value="${it ? it.sortOrder : 0}"></label>${btns('Guardar')}</form>`);
 }
 
 /* ============================ ACCIONES ============================ */
@@ -549,7 +572,7 @@ const F = {
     if (!fd.get('title').trim()) return err('Ingresá un título.');
     if (file && !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return err('Formato no permitido. Usá JPG, PNG o WebP.');
     if (file && file.size > 5 * 1024 * 1024) return err('La imagen supera los 5 MB.');
-    const body = { styleId: Number(fd.get('style')), title: fd.get('title').trim(), description: fd.get('desc') || null, tags: fd.get('tags').split(',').map(s => s.trim()).filter(Boolean) };
+    const body = { styleId: Number(fd.get('style')), title: fd.get('title').trim(), description: fd.get('desc') || null, tags: fd.get('tags').split(',').map(s => s.trim()).filter(Boolean), featured: !!fd.get('feat'), sortOrder: Number(fd.get('ord') || 0) };
     try {
       let it = await api(id ? `/api/portfolio/${id}` : '/api/portfolio', { method: id ? 'PUT' : 'POST', body });
       if (file) { const form = new FormData(); form.append('file', file); form.append('alt', fd.get('alt') || it.title); it = await api(`/api/portfolio/${it.id}/images`, { method: 'POST', form }); }
@@ -559,7 +582,8 @@ const F = {
   },
   async settings(f) {
     const d = fv(f), n = k => Number(d[k]);
-    const body = { name: d.name, aboutText: d.aboutText || null, whatsapp: d.whatsapp, address: d.address || null, timezone: d.timezone, slotMinutes: n('slotMinutes'), bufferMinutes: n('bufferMinutes'), autoConfirm: !!d.autoConfirm, maxDaysAhead: n('maxDaysAhead'), minNoticeMinutes: n('minNoticeMinutes') };
+    const body = { name: d.name, aboutText: d.aboutText || null, whatsapp: d.whatsapp, address: d.address || null, timezone: d.timezone, slotMinutes: n('slotMinutes'), bufferMinutes: n('bufferMinutes'), autoConfirm: !!d.autoConfirm, maxDaysAhead: n('maxDaysAhead'), minNoticeMinutes: n('minNoticeMinutes'),
+      neighborhood: d.neighborhood || null, city: d.city || null, mapsUrl: d.mapsUrl || null, instagramUrl: d.instagramUrl || null, tiktokUrl: d.tiktokUrl || null, youtubeUrl: d.youtubeUrl || null, hoursNote: d.hoursNote || null };
     try { await api('/api/settings', { method: 'PUT', body }); err(''); toast('Ajustes guardados.'); loadPublic(); } catch (e) { err(e.message); }
   }
 };
@@ -686,6 +710,7 @@ function reveal() {   // las secciones aparecen suavemente al hacer scroll
 Object.assign(A, {
   pgo(d) { P.date = d.d; loadPanel(); window.scrollTo({ top: 0, behavior: 'smooth' }); },
   cedit(d) { cform(d.id); },
+  async ifeat(d) { try { const r = await api(`/api/portfolio/${d.id}/feature`, { method: 'POST' }); toast(r.featured ? 'Marcado como destacado.' : 'Ya no es destacado.'); loadPanel(); } catch (e) { toast(e.message, 1); } },
   cpromo(d) { cpromo(d.id); },
   ptpl(d) { const t = P.tpls[d.i][1]; $('#pmsg').value = t; $('#pwa').href = waLink(P.promoPhone, t); },
   logodel() {

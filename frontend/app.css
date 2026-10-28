@@ -180,3 +180,15 @@ h2{position:relative}h2::after{content:"";display:block;width:44px;height:4px;bo
 .cal-h{text-transform:none}.cal-h span::first-letter,.dayh::first-letter{text-transform:uppercase}
 .wk.off input[type=time]{opacity:.35}.wk.off label{color:var(--mu)}
 button[disabled].btn{opacity:.5;cursor:not-allowed}
+
+/* ===== footer y destacados ===== */
+.site-foot{max-width:1000px;margin:0 auto;padding:32px 16px 40px;text-align:left;border-top:1px solid var(--bd)}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:28px}
+.site-foot h3{font-size:1.1rem;margin-bottom:10px}.site-foot p{margin:0 0 6px}.copy{margin-top:24px!important;font-size:.85rem}
+.socials a{display:flex;align-items:center;gap:10px;color:inherit;text-decoration:none;padding:6px 0;transition:transform .2s}
+.socials a:hover{transform:translateX(5px)}.socials svg{width:22px;height:22px;fill:currentColor}
+.hrs{list-style:none;padding:0;margin:0 0 8px}.hrs li{display:flex;justify-content:space-between;gap:14px;padding:3px 0;border-bottom:1px dashed var(--bd)}
+.cw{position:relative}.cw.feat{box-shadow:0 0 0 2px var(--blue),0 12px 32px rgba(0,0,0,.22)}
+.ribbon{position:absolute;z-index:3;top:16px;left:-34px;width:130px;text-align:center;transform:rotate(-45deg);background:var(--g);color:#fff;font-size:.7rem;font-weight:700;letter-spacing:.05em;padding:3px 0;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.cw.feat::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 35%,rgba(255,255,255,.35) 50%,transparent 65%);transform:translateX(-130%);animation:shine 5s ease-in-out infinite}
+@keyframes shine{55%,100%{transform:translateX(130%)}}
