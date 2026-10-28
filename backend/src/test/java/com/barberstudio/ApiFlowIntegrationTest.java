@@ -230,6 +230,23 @@ class ApiFlowIntegrationTest {
         mvc.perform(get("/api/portfolio/" + item).cookie(owner)).andExpect(status().isNotFound());
     }
 
+    @Test
+    void clientStoresBirthDateAndMarketingConsent() throws Exception {
+        long id = id(postJson("/api/clients", "{\"name\":\"Marta\",\"whatsapp\":\"099 555 666\",\"birthDate\":\"1990-05-17\",\"marketingOptIn\":true}"));
+        mvc.perform(get("/api/clients/" + id).cookie(owner))
+            .andExpect(jsonPath("$.birthDate").value("1990-05-17")).andExpect(jsonPath("$.marketingOptIn").value(true));
+    }
+
+    @Test
+    void shopCoverImageCanBeUploadedShownPubliclyAndRemoved() throws Exception {
+        byte[] png = {(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0};
+        mvc.perform(multipart("/api/settings/logo").file(new MockMultipartFile("file", "logo.png", "image/png", png)).cookie(owner))
+            .andExpect(status().isOk());
+        mvc.perform(get("/api/public/shop-a/shop")).andExpect(jsonPath("$.logoUrl").isNotEmpty());
+        mvc.perform(delete("/api/settings/logo").cookie(owner)).andExpect(status().isOk());
+        mvc.perform(get("/api/public/shop-a/shop")).andExpect(jsonPath("$.logoUrl").doesNotExist());
+    }
+
     // ---------- helpers ----------
     private LocalDate workDay() { return LocalDate.now(ZONE).plusDays(7); }
 
