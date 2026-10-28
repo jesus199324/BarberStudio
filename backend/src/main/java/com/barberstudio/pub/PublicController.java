@@ -2,7 +2,9 @@ package com.barberstudio.pub;
 
 import com.barberstudio.availability.AvailabilityService;
 import com.barberstudio.availability.BookingService;
+import com.barberstudio.barber.Barber;
 import com.barberstudio.barber.BarberRepository;
+import com.barberstudio.barber.WorkingHoursRepository;
 import com.barberstudio.catalog.BarberService;
 import com.barberstudio.catalog.BarberServiceRepository;
 import com.barberstudio.catalog.CatalogService.StyleResponse;
@@ -22,6 +24,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Map;
+import java.util.TreeMap;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.time.Duration;
 import java.util.List;
@@ -43,13 +48,18 @@ public class PublicController {
     private final RequestService requestService;
     private final RateLimiter limiter;
     private final BarberRepository barberRepo;
+    private final WorkingHoursRepository workingHours;
     private final AvailabilityService availability;
     private final BookingService booking;
 
     public record PublicService(Long id, String name, String description, BigDecimal price, int durationMinutes) {}
 
     public record PublicShop(String name, String slug, String aboutText, String address, String currency,
-                             String whatsappUrl, List<PublicService> services, String logoUrl) {}
+                             String whatsappUrl, List<PublicService> services, String logoUrl,
+                             String instagramUrl, String tiktokUrl, String youtubeUrl, String neighborhood, String city,
+                             String mapsUrl, String hoursNote, List<PublicHours> openingHours) {}
+
+    public record PublicHours(int weekday, String open, String close) {}
 
     @GetMapping("/shop")
     @Transactional(readOnly = true)
@@ -57,8 +67,10 @@ public class PublicController {
         Barbershop b = shopBySlug(slug);
         var list = services.findByBarbershopIdAndActiveTrueOrderByNameAsc(b.getId()).stream()
             .map(s -> new PublicService(s.getId(), s.getName(), s.getDescription(), s.getPrice(), s.getDurationMinutes())).toList();
+        var hours = openingHours(b);
         return new PublicShop(b.getName(), b.getSlug(), b.getAboutText(), b.getAddress(), b.getCurrency(),
-            WhatsAppLinks.link(b.getWhatsappE164(), "Hola, quisiera consultar por un turno."), list, b.getLogoUrl());
+            WhatsAppLinks.link(b.getWhatsappE164(), "Hola, quisiera consultar por un turno."), list, b.getLogoUrl(),
+            b.getInstagramUrl(), b.getTiktokUrl(), b.getYoutubeUrl(), b.getNeighborhood(), b.getCity(), b.getMapsUrl(), b.getHoursNote(), hours);
     }
 
     @GetMapping("/styles")
@@ -127,6 +139,18 @@ public class PublicController {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Hiciste muchas reservas seguidas. Probá de nuevo más tarde.");
         }
         return booking.book(shopBySlug(slug), r);
+    }
+
+    /** Horario de atencion del negocio: por dia, desde la apertura mas temprana hasta el cierre mas tardio de los barberos activos. */
+    private List<PublicHours> openingHours(Barbershop b) {
+        List<Long> ids = barberRepo.findByBarbershopIdAndActiveTrueOrderBySortOrderAscNameAsc(b.getId()).stream().map(Barber::getId).toList();
+        Map<Integer, LocalTime[]> byDay = new TreeMap<>();
+        if (!ids.isEmpty()) {
+            workingHours.findByBarberIdIn(ids).forEach(w -> byDay.merge((int) w.getWeekday(),
+                new LocalTime[]{w.getStartTime(), w.getEndTime()},
+                (a, c) -> new LocalTime[]{a[0].isBefore(c[0]) ? a[0] : c[0], a[1].isAfter(c[1]) ? a[1] : c[1]}));
+        }
+        return byDay.entrySet().stream().map(e -> new PublicHours(e.getKey(), e.getValue()[0].toString(), e.getValue()[1].toString())).toList();
     }
 
     private BarberService activeService(Barbershop shop, Long id) {
