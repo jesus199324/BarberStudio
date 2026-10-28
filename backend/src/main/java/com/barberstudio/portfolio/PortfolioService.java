@@ -36,7 +36,7 @@ public class PortfolioService {
     public record ItemRequest(@NotNull(message = "Elegí un estilo") Long styleId,
                               @NotBlank(message = "El título es obligatorio") @Size(max = 140) String title,
                               @Size(max = 2000) String description,
-                              List<String> tags) {}
+                              List<String> tags, Boolean featured, Integer sortOrder) {}
 
     public record ImageResponse(Long id, String url, String altText, int position, boolean cover) {}
 
@@ -44,7 +44,7 @@ public class PortfolioService {
 
     public record ItemResponse(Long id, String title, String description, StyleRef style, List<String> tags,
                                PortfolioStatus status, Instant publishedAt, String coverUrl,
-                               List<ImageResponse> images, String whatsappUrl) {}
+                               List<ImageResponse> images, String whatsappUrl, boolean featured, int sortOrder) {}
 
     // ================= publico =================
     @Transactional(readOnly = true)
@@ -55,7 +55,7 @@ public class PortfolioService {
         }
         String pattern = "%" + (q == null ? "" : q.trim().toLowerCase(Locale.ROOT)) + "%";
         var pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 50),
-            Sort.by(Sort.Direction.DESC, "publishedAt"));
+            Sort.by(Sort.Order.desc("featured"), Sort.Order.asc("sortOrder"), Sort.Order.desc("publishedAt")));
         return PageResponse.of(items.searchPublished(shop.getId(), styleId, pattern, pageable).map(i -> toResponse(i, shop)));
     }
 
@@ -172,6 +172,14 @@ public class PortfolioService {
         return toResponse(item, null);
     }
 
+    /** Marca o desmarca un trabajo como destacado (decision del barbero, no un dato de popularidad). */
+    @Transactional
+    public ItemResponse toggleFeatured(Long id) {
+        PortfolioItem item = find(id);
+        item.setFeatured(!item.isFeatured());
+        return toResponse(items.saveAndFlush(item), null);
+    }
+
     @Transactional
     public void delete(Long id) {
         PortfolioItem item = find(id);
@@ -192,6 +200,8 @@ public class PortfolioService {
         item.setTitle(r.title().trim());
         item.setDescription(r.description());
         item.setTags(normalizeTags(r.tags()));
+        if (r.featured() != null) item.setFeatured(r.featured());
+        if (r.sortOrder() != null) item.setSortOrder(r.sortOrder());
     }
 
     private String[] normalizeTags(List<String> tags) {
@@ -209,6 +219,6 @@ public class PortfolioService {
             "Hola, vi el corte " + i.getTitle() + " en tu portfolio y me gustaría consultar disponibilidad para hacerme uno.");
         return new ItemResponse(i.getId(), i.getTitle(), i.getDescription(),
             new StyleRef(i.getStyle().getId(), i.getStyle().getName(), i.getStyle().getSlug()),
-            Arrays.asList(i.getTags()), i.getStatus(), i.getPublishedAt(), cover, imgs, wa);
+            Arrays.asList(i.getTags()), i.getStatus(), i.getPublishedAt(), cover, imgs, wa, i.isFeatured(), i.getSortOrder());
     }
 }

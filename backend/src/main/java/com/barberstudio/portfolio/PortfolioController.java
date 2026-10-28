@@ -32,6 +32,9 @@ public class PortfolioController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) { service.delete(id); }
 
+    @PostMapping("/{id}/feature")
+    public ItemResponse feature(@PathVariable Long id) { return service.toggleFeatured(id); }
+
     @PostMapping("/{id}/publish")
     public ItemResponse publish(@PathVariable Long id) { return service.publish(id); }
 
