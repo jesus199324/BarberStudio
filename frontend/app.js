@@ -71,7 +71,7 @@ function header() {
 function render() {
   S.mode = location.hash.startsWith('#/panel') ? 'panel' : 'public';
   $('#app').innerHTML = header() + `<main>${S.mode === 'public' ? pubHTML() : panelShell()}</main>` + (S.mode === 'public' && S.shop ? footer() : '');
-  if (S.mode === 'public' && !S.loading && !S.err) { renderBook(); drawGallery(); drawQz(); }
+  if (S.mode === 'public' && !S.loading && !S.err) { renderBook(); drawGallery(); drawQz(); reveal(); }
   if (S.mode === 'panel') loadPanel();
 }
 
@@ -85,8 +85,8 @@ function pubHTML() {
   if (S.err) return `<div class="empty"><p>${esc(S.err)}</p><button class="btn" data-a="reload">Reintentar</button></div>`;
   const sh = S.shop;
   return `<div class="pole"></div>
- <section class="hero"><h1>${esc(sh.name)}</h1><p>${esc(sh.aboutText || 'Elegí tu servicio, tu barbero y reservá tu turno online.')}</p>
- <div class="row"><button class="btn" data-a="go" data-t="reservar">Reservar turno</button><a class="btn wa" target="_blank" rel="noopener" href="${esc(sh.whatsappUrl)}">Consultar por WhatsApp</a></div></section>
+ <section class="hero ${sh.logoUrl ? 'has-art' : ''}"><div class="hero-txt"><h1>${esc(sh.name)}</h1><p>${esc(sh.aboutText || 'Elegí tu servicio, tu barbero y reservá tu turno online.')}</p>
+ <div class="row"><button class="btn" data-a="go" data-t="reservar">Reservar turno</button><a class="btn wa" target="_blank" rel="noopener" href="${esc(sh.whatsappUrl)}">Consultar por WhatsApp</a></div></div>${sh.logoUrl ? `<div class="hero-art"><img src="${esc(imgUrl(sh.logoUrl))}" alt="${esc(sh.name)}"></div>` : ''}</section>
  <section id="servicios"><h2>Servicios</h2>${S.services.length
     ? `<ul class="svc">${S.services.map(s => `<li><span>${esc(s.name)}</span><span class="dots"></span><b>${money(s.price)}</b><small>${s.durationMinutes} min</small></li>`).join('')}</ul>`
     : '<div class="empty">Muy pronto vas a ver acá los servicios y precios.</div>'}</section>
@@ -245,20 +245,23 @@ const acts = a => (a.status === 'PENDING' ? `<button class="btn sm" data-a="pcon
 const T = {
   async agenda() {
     const q = `from=${P.date}&to=${P.date}${P.barber ? '&barberId=' + P.barber : ''}`;
-    const [sum, ap, bs] = await Promise.all([api('/api/dashboard/summary'), api('/api/appointments?' + q), api('/api/barbers')]);
-    P.barbers = bs; P.appts = ap;
+    const [sum, ap, bs, up] = await Promise.all([api('/api/dashboard/summary'), api('/api/appointments?' + q), api('/api/barbers'),
+      api('/api/appointments?from=' + ymd(new Date()) + '&to=' + ymd(new Date(Date.now() + 60 * 864e5)))]);
+    P.barbers = bs; P.appts = [...ap, ...up.filter(x => !ap.some(y => y.id === x.id))];
+    const pend = up.filter(a => a.status === 'PENDING');
+    const pendingBox = pend.length ? `<div class="okbox" style="margin-bottom:18px"><h2 style="font-size:1.3rem;margin:0 0 8px">Reservas por confirmar (${pend.length})</h2><ul class="list">${pend.map(a => `<li><div class="tm">${esc(new Date(a.startAt).toLocaleDateString('es-UY', { weekday: 'short', day: 'numeric', month: 'short', timeZone: TZ }))}<small>${hm(a.startAt)}</small></div><div class="gr"><b>${esc(a.clientName)}</b> <span class="mu">${esc(a.clientWhatsapp)}</span><br><span class="mu">${esc(a.serviceName)} con ${esc(a.barberName)}</span></div><div class="acts"><button class="btn sm" data-a="pconf" data-id="${a.id}">Confirmar</button><button class="btn sm ghost" data-a="pgo" data-d="${ymd(a.startAt)}">Ver día</button><button class="btn sm ghost" data-a="pcancel" data-id="${a.id}">Rechazar</button></div></li>`).join('')}</ul></div>` : '';
     const k = (b, l, n) => `<div class="kpi"><b>${b}</b>${l}${n ? `<br><small>${n}</small>` : ''}</div>`;
     const rows = ap.map(a => `<li><div class="tm">${hm(a.startAt)}<small>${a.durationMinutes} min</small></div><div class="gr"><b>${esc(a.clientName)}</b> <span class="mu">${esc(a.clientWhatsapp)}</span><br><span class="mu">${esc(a.serviceName)} con ${esc(a.barberName)}, ${money(a.priceAgreed)}</span>${a.notes ? `<br><small class="mu">${esc(a.notes)}</small>` : ''}</div><span class="bd ${a.status}">${ST[a.status]}</span><div class="acts">${acts(a)}</div></li>`).join('');
-    return `<div class="kpis">${k(money(sum.registeredIncomeToday), 'Ingresos registrados hoy', 'Solo servicios completados. No es ganancia neta.')}${k(sum.completedToday, 'Completados hoy')}${k(sum.pendingToConfirm, 'Por confirmar')}${k(sum.cancelledToday, 'Cancelados hoy')}</div>
+    return `${pendingBox}<div class="kpis">${k(money(sum.registeredIncomeToday), 'Ingresos registrados hoy', 'Solo servicios completados. No es ganancia neta.')}${k(sum.completedToday, 'Completados hoy')}${k(sum.pendingToConfirm, 'Por confirmar')}${k(sum.cancelledToday, 'Cancelados hoy')}</div>
  <div class="row" style="margin-bottom:12px"><button class="btn sm ghost" data-a="pday" data-d="-1" aria-label="Día anterior">‹</button><input type="date" id="pdate" value="${P.date}" style="width:auto"><button class="btn sm ghost" data-a="pday" data-d="1" aria-label="Día siguiente">›</button><button class="btn sm ghost" data-a="ptoday">Hoy</button>
  <select id="pbarber" aria-label="Barbero" style="width:auto"><option value="">Todos los barberos</option>${bs.map(b => `<option value="${b.id}" ${String(P.barber) === String(b.id) ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}</select><button class="btn" data-a="pnew">Nuevo turno</button></div>
- <h2 style="font-size:1.4rem;text-transform:capitalize">${esc(dlong(P.date + 'T12:00:00' + OFF))}</h2>${rows ? `<ul class="list">${rows}</ul>` : '<div class="empty">No hay turnos para este día.</div>'}`;
+ <h2 class="dayh" style="font-size:1.4rem">${esc(dlong(P.date + 'T12:00:00' + OFF))}</h2>${rows ? `<ul class="list">${rows}</ul>` : '<div class="empty">No hay turnos para este día.</div>'}`;
   },
 
   async barberos() {
     const [bs, sv] = await Promise.all([api('/api/barbers'), api('/api/services')]); P.barbers = bs; P.services = sv;
     return `<div class="row" style="margin-bottom:12px"><button class="btn" data-a="bnew">Nuevo barbero</button></div>${bs.length
-      ? `<ul class="list">${bs.map(b => `<li><div class="gr"><b>${esc(b.name)}</b> ${b.active ? '' : '<span class="bd">Inactivo</span>'}<br><span class="mu">${esc(b.specialties || '')} ${b.serviceIds.length} servicio(s), ${b.futureAppointments} turno(s) próximos</span></div><div class="acts"><button class="btn sm" data-a="bhours" data-id="${b.id}">Horario</button><button class="btn sm ghost" data-a="bover" data-id="${b.id}">Excepciones</button><button class="btn sm ghost" data-a="bedit" data-id="${b.id}">Editar</button><button class="btn sm ghost" data-a="bdel" data-id="${b.id}">Borrar</button></div></li>`).join('')}</ul>`
+      ? `<ul class="list">${bs.map(b => `<li><div class="gr"><b>${esc(b.name)}</b> ${b.active ? '' : '<span class="bd">Inactivo</span>'}<br><span class="mu">${esc(b.specialties || '')} ${b.serviceIds.length} servicio(s), ${b.futureAppointments} turno(s) próximos</span></div><div class="acts"><button class="btn sm" data-a="bhours" data-id="${b.id}">Horario y días libres</button><button class="btn sm ghost" data-a="bedit" data-id="${b.id}">Editar</button><button class="btn sm ghost" data-a="bdel" data-id="${b.id}">Borrar</button></div></li>`).join('')}</ul>`
       : '<div class="empty">Todavía no hay barberos.</div>'}<p class="mu"><small>Mientras un barbero no tenga horario cargado, no recibe reservas. Para licencias y vacaciones usá la pestaña Cierres.</small></p>`;
   },
 
@@ -281,10 +284,13 @@ const T = {
   },
 
   async clientes() {
-    const cl = await api('/api/clients' + (P.q ? '?q=' + encodeURIComponent(P.q) : ''));
+    const cl = await api('/api/clients' + (P.q ? '?q=' + encodeURIComponent(P.q) : '')); P.clients = cl;
     return `<div class="row" style="margin-bottom:12px"><input id="cq" type="search" placeholder="Buscar por nombre o teléfono" aria-label="Buscar cliente" style="max-width:300px" value="${esc(P.q)}"><button class="btn" data-a="cnew">Nuevo cliente</button></div>${cl.length
-      ? `<ul class="list">${cl.map(c => `<li><div class="gr"><b>${esc(c.name)}</b> <span class="mu">${esc(c.whatsapp)}</span>${c.notes ? `<br><small class="mu">${esc(c.notes)}</small>` : ''}</div><div class="acts"><button class="btn sm ghost" data-a="cvis" data-id="${c.id}">Historial</button><button class="btn sm ghost" data-a="carch" data-id="${c.id}">Archivar</button></div></li>`).join('')}</ul>`
-      : '<div class="empty">No hay clientes para mostrar.</div>'}`;
+      ? `<ul class="list">${cl.map(c => `<li><div class="gr"><b>${esc(c.name)}</b><br><span class="mu">${esc(c.whatsapp)}${c.birthDate ? ' | Cumpleaños: ' + bday(c.birthDate) : ''}</span>${c.preferences ? `<br><small class="mu">Prefiere: ${esc(c.preferences)}</small>` : ''}<br>${c.marketingOptIn ? '<span class="bd on">Acepta promociones</span>' : '<span class="bd">Sin autorización para promociones</span>'}</div>
+ <div class="acts"><a class="btn sm" target="_blank" rel="noopener" href="${esc(waLink(c.whatsapp, 'Hola ' + first(c.name) + ', '))}">Escribir</a>
+ <button class="btn sm" data-a="cpromo" data-id="${c.id}" ${c.marketingOptIn ? '' : 'disabled title="El cliente no aceptó recibir promociones. Si te lo pidió, marcalo en Editar."'}>Enviar promoción</button>
+ <button class="btn sm ghost" data-a="cvis" data-id="${c.id}">Historial</button><button class="btn sm ghost" data-a="cedit" data-id="${c.id}">Editar</button><button class="btn sm ghost" data-a="carch" data-id="${c.id}">Archivar</button></div></li>`).join('')}</ul>`
+      : '<div class="empty">No hay clientes para mostrar.</div>'}<p class="mu"><small>Los mensajes se abren en WhatsApp con el texto listo y los enviás vos con un toque: no se manda nada automáticamente. Las promociones solo se ofrecen a clientes que aceptaron recibirlas.</small></p>`;
   },
 
   async portfolio() {
@@ -304,7 +310,11 @@ const T = {
  <label style="grid-column:1/-1">Presentación (se muestra en la portada)<textarea name="aboutText" rows="3">${esc(s.aboutText || '')}</textarea></label>
  ${n('slotMinutes', 'Intervalo entre turnos (minutos)', 5, 120)}${n('bufferMinutes', 'Tiempo de preparación entre turnos (minutos)', 0, 120)}${n('maxDaysAhead', 'Reservas hasta (días hacia adelante)', 1, 365)}${n('minNoticeMinutes', 'Aviso mínimo para reservar (minutos)', 0, 10080)}
  <label style="grid-column:1/-1;font-weight:400"><input type="checkbox" name="autoConfirm" ${s.autoConfirm ? 'checked' : ''} style="width:auto"> Confirmar automáticamente las reservas (si no, quedan pendientes hasta que las confirmes)</label>
- <div><button class="btn">Guardar ajustes</button></div></form><small class="err" id="e-f"></small>`;
+ <div><button class="btn">Guardar ajustes</button></div></form><small class="err" id="e-f"></small>
+ <h2 style="font-size:1.4rem;margin-top:28px">Imagen de portada (opcional)</h2>
+ <p class="mu">Se muestra a la derecha de tu nombre en la portada: tu logo, la foto del barbero o lo que prefieras. Si no subís nada, la portada queda solo con el texto. Recomendado: imagen cuadrada.</p>
+ ${s.logoUrl ? `<img class="thumb" src="${esc(imgUrl(s.logoUrl))}" alt="Imagen de portada actual">` : '<p class="mu">Todavía no hay imagen.</p>'}
+ <form data-f="logo" class="row"><input type="file" name="file" accept="image/jpeg,image/png,image/webp" aria-label="Imagen de portada" style="max-width:320px"><button class="btn">Subir imagen</button>${s.logoUrl ? '<button type="button" class="btn ghost" data-a="logodel">Quitar imagen</button>' : ''}</form><small class="err" id="e-logo"></small>`;
   }
 };
 
@@ -339,21 +349,27 @@ function bform(id) {
 }
 
 async function bhours(id) {
-  const hrs = await api(`/api/barbers/${id}/hours`), by = Object.fromEntries(hrs.map(h => [h.weekday, h]));
-  dopen(`<h2>Horario habitual</h2><p class="mu">Marcá los días de trabajo. El descanso es opcional.</p><form data-f="hours" novalidate><input type="hidden" name="id" value="${id}">
+  const [hrs, ovs] = await Promise.all([api(`/api/barbers/${id}/hours`), api(`/api/barbers/${id}/overrides`)]);
+  const by = Object.fromEntries(hrs.map(h => [h.weekday, h])), name = (P.barbers.find(x => x.id == id) || {}).name || '';
+  const row = d => {
+    const h = by[d], off = h ? '' : 'disabled';
+    return `<div class="wk ${h ? '' : 'off'}"><label style="font-weight:400;margin:0"><input type="checkbox" name="on${d}" ${h ? 'checked' : ''} style="width:auto"> ${WD[d]} <small class="mu tag">${h ? '' : '(día libre)'}</small></label>
+ <input type="time" name="s${d}" value="${t5(h && h.startTime) || '10:00'}" ${off} aria-label="Inicio ${WD[d]}"><input type="time" name="e${d}" value="${t5(h && h.endTime) || '19:00'}" ${off} aria-label="Fin ${WD[d]}">
+ <input type="time" name="bs${d}" value="${t5(h && h.breakStart)}" ${off} aria-label="Inicio del descanso ${WD[d]}"><input type="time" name="be${d}" value="${t5(h && h.breakEnd)}" ${off} aria-label="Fin del descanso ${WD[d]}"></div>`;
+  };
+  dopen(`<h2>Horario y días libres${name ? ': ' + esc(name) : ''}</h2>
+ <p class="mu">Marcá los días que trabaja. <b>Los días sin marcar son sus días libres de todas las semanas.</b> El descanso es opcional.</p>
+ <form data-f="hours" novalidate><input type="hidden" name="id" value="${id}">
  <div class="wk"><span></span><small>Inicio</small><small>Fin</small><small>Descanso desde</small><small>Descanso hasta</small></div>
- ${[1, 2, 3, 4, 5, 6, 7].map(d => { const h = by[d]; return `<div class="wk"><label style="font-weight:400;margin:0"><input type="checkbox" name="on${d}" ${h ? 'checked' : ''} style="width:auto"> ${WD[d]}</label><input type="time" name="s${d}" value="${t5(h && h.startTime) || '10:00'}" aria-label="Inicio ${WD[d]}"><input type="time" name="e${d}" value="${t5(h && h.endTime) || '19:00'}" aria-label="Fin ${WD[d]}"><input type="time" name="bs${d}" value="${t5(h && h.breakStart)}" aria-label="Inicio del descanso ${WD[d]}"><input type="time" name="be${d}" value="${t5(h && h.breakEnd)}" aria-label="Fin del descanso ${WD[d]}"></div>`; }).join('')}
- ${btns('Guardar horario')}</form>`, 'wide');
-}
-
-async function bover(id) {
-  const list = await api(`/api/barbers/${id}/overrides`);
-  dopen(`<h2>Excepciones por fecha</h2><p class="mu">Un día libre, o un horario distinto solo para esa fecha. No cambian las demás semanas.</p>
- ${list.length ? `<ul class="list" style="margin-bottom:14px">${list.map(o => `<li><div class="gr"><b>${o.date}</b> ${o.dayOff ? 'Día libre' : `${t5(o.startTime)} a ${t5(o.endTime)}`}${o.note ? `<br><small class="mu">${esc(o.note)}</small>` : ''}</div><button class="btn sm ghost" data-a="odel" data-b="${id}" data-id="${o.id}">Quitar</button></li>`).join('')}</ul>` : '<p class="mu">No hay excepciones cargadas.</p>'}
+ ${[1, 2, 3, 4, 5, 6, 7].map(row).join('')}${btns('Guardar horario')}</form>
+ <h3 class="st">Un día libre puntual o un horario especial</h3>
+ <p class="mu"><small>Sirve para una sola fecha: no cambia las demás semanas. Para vacaciones de varios días usá la pestaña Cierres.</small></p>
+ ${ovs.length ? `<ul class="list" style="margin-bottom:14px">${ovs.map(o => `<li><div class="gr"><b>${o.date}</b> ${o.dayOff ? 'Día libre' : `Trabaja de ${t5(o.startTime)} a ${t5(o.endTime)}`}${o.note ? `<br><small class="mu">${esc(o.note)}</small>` : ''}</div><button class="btn sm ghost" data-a="odel" data-b="${id}" data-id="${o.id}">Quitar</button></li>`).join('')}</ul>` : '<p class="mu">No hay fechas especiales cargadas.</p>'}
  <form data-f="override" class="two" novalidate><input type="hidden" name="id" value="${id}"><label>Fecha<input type="date" name="date"></label>
- <label style="font-weight:400"><input type="checkbox" name="dayOff" style="width:auto"> Día libre</label><label>Inicio<input type="time" name="st" value="10:00"></label><label>Fin<input type="time" name="et" value="19:00"></label>
- <label>Descanso desde<input type="time" name="bs"></label><label>Descanso hasta<input type="time" name="be"></label><label style="grid-column:1/-1">Nota<input name="note"></label>
- <div><button class="btn">Agregar excepción</button> <button type="button" class="btn ghost" data-a="close">Cerrar</button></div></form><small class="err" id="e-f"></small>`, 'wide');
+ <label style="font-weight:400"><input type="checkbox" name="dayOff" checked style="width:auto"> Día libre (no trabaja)</label>
+ <label>Si trabaja, desde<input type="time" name="st" value="10:00"></label><label>hasta<input type="time" name="et" value="19:00"></label>
+ <label style="grid-column:1/-1">Nota (opcional)<input name="note" placeholder="Ej: turno médico"></label>
+ <div><button class="btn">Agregar fecha</button> <button type="button" class="btn ghost" data-a="close">Cerrar</button></div></form><small class="err" id="e-o"></small>`, 'wide');
 }
 
 function affectedDialog(list) {
@@ -371,8 +387,28 @@ function sform(id) {
  <label style="font-weight:400"><input type="checkbox" name="active" ${s.active ? 'checked' : ''} style="width:auto"> Activo (se puede reservar)</label>${btns('Guardar')}</form>`);
 }
 
-function cform() {
-  dopen(`<h2>Nuevo cliente</h2><form data-f="client" class="stack" novalidate><label>Nombre<input name="name" maxlength="120"></label><label>WhatsApp<input name="whatsapp" inputmode="tel" placeholder="099 123 456"></label><label>Preferencias<input name="preferences"></label>${btns('Guardar')}</form>`);
+function cform(id) {
+  const c = id ? P.clients.find(x => x.id == id) : {};
+  dopen(`<h2>${id ? 'Editar' : 'Nuevo'} cliente</h2><form data-f="client" class="stack" novalidate><input type="hidden" name="id" value="${id || ''}">
+ <label>Nombre<input name="name" maxlength="120" value="${esc(c.name || '')}"></label>
+ <label>WhatsApp<input name="whatsapp" inputmode="tel" placeholder="099 123 456" value="${esc(c.whatsapp || '')}"></label>
+ <label>Fecha de nacimiento (opcional)<input type="date" name="birth" value="${esc(c.birthDate || '')}"></label>
+ <label>Preferencias de corte<input name="preferences" value="${esc(c.preferences || '')}"></label>
+ <label>Notas del servicio<textarea name="notes" rows="2">${esc(c.notes || '')}</textarea></label>
+ <label style="font-weight:400"><input type="checkbox" name="optin" ${c.marketingOptIn ? 'checked' : ''} style="width:auto"> El cliente aceptó recibir promociones y mensajes por WhatsApp</label>${btns('Guardar')}</form>`);
+}
+
+function cpromo(id) {
+  const c = P.clients.find(x => x.id == id), n = first(c.name), shop = S.shop ? S.shop.name : 'la barbería';
+  P.tpls = [
+    ['Promoción', `¡Hola ${n}! Esta semana tenemos una promo para vos en ${shop}: [escribí acá la promo]. Reservá tu turno cuando quieras.`],
+    ['Te extrañamos', `¡Hola ${n}! Hace un tiempo que no te vemos por ${shop} y nos encantaría recibirte de nuevo. Tenemos un beneficio para tu próximo corte. ¡Reservá cuando quieras!`],
+    ['Cumpleaños', `¡Feliz cumpleaños ${n}! De parte de todo el equipo de ${shop}, un saludo y un regalo para tu próximo corte. ¡Te esperamos!`]];
+  P.promoPhone = c.whatsapp;
+  dopen(`<h2>Mensaje para ${esc(c.name)}</h2><p class="mu">Elegí una plantilla o escribí tu mensaje. Se abre WhatsApp con el texto listo y lo enviás vos con un toque.</p>
+ <div class="row" style="margin-bottom:10px">${P.tpls.map((t, i) => `<button type="button" class="chip" data-a="ptpl" data-i="${i}">${t[0]}</button>`).join('')}</div>
+ <textarea id="pmsg" rows="5" aria-label="Mensaje">${esc(P.tpls[0][1])}</textarea>
+ <div class="row" style="margin-top:12px"><a id="pwa" class="btn wa" target="_blank" rel="noopener" href="${esc(waLink(c.whatsapp, P.tpls[0][1]))}">Abrir WhatsApp</a><button type="button" class="btn ghost" data-a="close">Cerrar</button></div>`);
 }
 
 function pform(id) {
@@ -420,9 +456,9 @@ const A = {
   pcancel(d) { ask('¿Cancelar este turno?', async () => { try { await api(`/api/appointments/${d.id}/cancel`, { method: 'POST' }); toast('Turno cancelado. No genera ingresos.'); loadPanel(); } catch (e) { toast(e.message, 1); } }); },
   preas(d) { reassign(d.id); },
   bnew() { bform(); }, bedit(d) { bform(d.id); },
-  bhours(d) { bhours(d.id).catch(e => toast(e.message, 1)); }, bover(d) { bover(d.id).catch(e => toast(e.message, 1)); },
+  bhours(d) { bhours(d.id).catch(e => toast(e.message, 1)); },
   bdel(d) { ask('¿Borrar este barbero?', async () => { try { await api(`/api/barbers/${d.id}`, { method: 'DELETE' }); toast('Barbero borrado.'); loadPanel(); } catch (e) { toast(e.message, 1); } }); },
-  odel(d) { api(`/api/barbers/${d.b}/overrides/${d.id}`, { method: 'DELETE' }).then(() => bover(d.b)).catch(e => toast(e.message, 1)); },
+  odel(d) { api(`/api/barbers/${d.b}/overrides/${d.id}`, { method: 'DELETE' }).then(() => bhours(d.b)).catch(e => toast(e.message, 1)); },
   cdel(d) { ask('¿Eliminar este bloqueo?', async () => { try { await api(`/api/closures/${d.id}`, { method: 'DELETE' }); toast('Bloqueo eliminado.'); loadPanel(); } catch (e) { toast(e.message, 1); } }); },
   async cgo(d) { try { await api('/api/closures', { method: 'POST', body: { ...P.cbody, authorizeAffected: true, cancelAffected: d.m === 'cancel' } }); done(d.m === 'cancel' ? 'Bloqueo creado y turnos cancelados.' : 'Bloqueo creado. Los turnos afectados siguen en la agenda.'); } catch (e) { toast(e.message, 1); } },
   snew() { sform(); }, sedit(d) { sform(d.id); },
@@ -479,10 +515,10 @@ const F = {
     try { await api(`/api/barbers/${id}/hours`, { method: 'PUT', body: { items } }); done('Horario guardado.'); } catch (e) { err(e.message); }
   },
   async override(f) {
-    const d = fv(f);
-    if (!d.date) return err('Elegí la fecha.');
-    const body = { date: d.date, dayOff: !!d.dayOff, startTime: d.dayOff ? null : d.st || null, endTime: d.dayOff ? null : d.et || null, breakStart: d.bs || null, breakEnd: d.be || null, note: d.note || null };
-    try { await api(`/api/barbers/${d.id}/overrides`, { method: 'POST', body }); toast('Excepción guardada.'); bover(d.id); } catch (e) { err(e.message); }
+    const d = fv(f), eo = m => { const e = $('#e-o'); if (e) e.textContent = m; };
+    if (!d.date) return eo('Elegí la fecha.');
+    const body = { date: d.date, dayOff: !!d.dayOff, startTime: d.dayOff ? null : d.st || null, endTime: d.dayOff ? null : d.et || null, note: d.note || null };
+    try { await api(`/api/barbers/${d.id}/overrides`, { method: 'POST', body }); toast('Fecha guardada.'); bhours(d.id); } catch (e) { eo(e.message); }
   },
   async closure(f) {
     const d = fv(f); err('');
@@ -498,8 +534,10 @@ const F = {
     try { await api(d.id ? `/api/services/${d.id}` : '/api/services', { method: d.id ? 'PUT' : 'POST', body }); done('Servicio guardado.'); } catch (e) { err(e.message); }
   },
   async client(f) {
-    const d = fv(f);
-    try { await api('/api/clients', { method: 'POST', body: { name: d.name, whatsapp: d.whatsapp, preferences: d.preferences || null, notes: null } }); done('Cliente guardado.'); }
+    const d = fv(f), id = d.id;
+    if (!d.name.trim()) return err('Ingresá el nombre.');
+    const body = { name: d.name.trim(), whatsapp: d.whatsapp, preferences: d.preferences || null, notes: d.notes || null, birthDate: d.birth || null, marketingOptIn: !!d.optin };
+    try { await api(id ? `/api/clients/${id}` : '/api/clients', { method: id ? 'PUT' : 'POST', body }); done('Cliente guardado.'); }
     catch (e) { err(e.status === 409 ? 'Ya existe un cliente con ese WhatsApp.' : e.message); }
   },
   async style(f) {
@@ -545,7 +583,11 @@ document.addEventListener('keydown', e => {
   if (!dlg.open || (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft')) return;
   const b = dlg.querySelector('[data-a=nav]'); if (b) A.nav({ id: b.dataset.id, d: e.key === 'ArrowRight' ? 1 : -1 });
 });
-addEventListener('hashchange', () => { render(); scrollTo(0, 0); });
+addEventListener('hashchange', () => {
+  const prev = S.mode, next = location.hash.startsWith('#/panel') ? 'panel' : 'public';
+  if (prev === 'panel' && next === 'public') loadPublic(); else render();   // al volver al sitio se actualizan portfolio, servicios y ajustes
+  scrollTo(0, 0);
+});
 addEventListener('scroll', () => { const h = document.documentElement, b = document.querySelector('header.bar'); if (b) b.style.setProperty('--p', (scrollY / ((h.scrollHeight - innerHeight) || 1) * 100) + '%'); }, { passive: true });
 document.addEventListener('pointermove', e => {
   const hero = e.target.closest && e.target.closest('.hero');
@@ -626,5 +668,56 @@ Object.assign(A, {
   facego() { if (!Q.face.f || !Q.face.h) { toast('Elegí al menos tu rostro y tu tipo de cabello.', true); return; } Q.face.go = true; drawQz(); }
 });
 document.addEventListener('change', e => { const t = e.target; if (t.dataset && t.dataset.k) Q.face[t.dataset.k] = t.value; });
+
+/* ============ Panel: clientes, dias libres y efectos del sitio ============ */
+function waLink(phone, text) { return 'https://wa.me/' + String(phone).replace('+', '') + '?text=' + encodeURIComponent(text); }
+function first(name) { return String(name || '').trim().split(/\s+/)[0]; }
+function bday(d) { const [y, m, dd] = String(d).split('-'); return `${dd}/${m}/${y}`; }
+
+function reveal() {   // las secciones aparecen suavemente al hacer scroll
+  const els = [...document.querySelectorAll('main > section')];
+  if (!('IntersectionObserver' in window)) return;
+  els.forEach(el => el.classList.add('rv'));
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0.06 });
+  els.forEach(el => io.observe(el));
+  setTimeout(() => els.forEach(el => el.classList.add('in')), 3000);   // por si el observador no llega a disparar
+}
+
+Object.assign(A, {
+  pgo(d) { P.date = d.d; loadPanel(); window.scrollTo({ top: 0, behavior: 'smooth' }); },
+  cedit(d) { cform(d.id); },
+  cpromo(d) { cpromo(d.id); },
+  ptpl(d) { const t = P.tpls[d.i][1]; $('#pmsg').value = t; $('#pwa').href = waLink(P.promoPhone, t); },
+  logodel() {
+    ask('¿Quitar la imagen de portada?', async () => { try { await api('/api/settings/logo', { method: 'DELETE' }); toast('Imagen quitada.'); loadPanel(); } catch (e) { toast(e.message, 1); } }, 'Quitar');
+  }
+});
+Object.assign(F, {
+  async logo(f) {
+    const file = f.file.files[0], e = $('#e-logo'); e.textContent = '';
+    if (!file) { e.textContent = 'Elegí una imagen.'; return; }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { e.textContent = 'Formato no permitido. Usá JPG, PNG o WebP.'; return; }
+    if (file.size > 5 * 1024 * 1024) { e.textContent = 'La imagen supera los 5 MB.'; return; }
+    const form = new FormData(); form.append('file', file);
+    try { await api('/api/settings/logo', { method: 'POST', form }); toast('Imagen de portada guardada.'); loadPanel(); } catch (x) { e.textContent = x.message; }
+  }
+});
+
+document.addEventListener('change', e => {   // al desmarcar un dia, queda como "dia libre"
+  const t = e.target;
+  if (t.name && /^on[1-7]$/.test(t.name)) {
+    const row = t.closest('.wk'); row.classList.toggle('off', !t.checked);
+    row.querySelectorAll('input[type=time]').forEach(i => { i.disabled = !t.checked; });
+    const tag = row.querySelector('.tag'); if (tag) tag.textContent = t.checked ? '' : '(día libre)';
+  }
+});
+document.addEventListener('input', e => { if (e.target.id === 'pmsg') { const a = $('#pwa'); if (a) a.href = waLink(P.promoPhone, e.target.value); } });
+document.addEventListener('pointermove', e => {   // la imagen de portada se inclina suavemente hacia el cursor
+  const art = document.querySelector('.hero-art'); if (!art) return;
+  const hero = art.closest('.hero'), r = hero.getBoundingClientRect();
+  if (e.clientY < r.top - 80 || e.clientY > r.bottom + 80) return;
+  const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5, img = art.querySelector('img');
+  if (img) { img.style.setProperty('--ry', (x * 14) + 'deg'); img.style.setProperty('--rx', (-y * 14) + 'deg'); }
+});
 
 loadPublic();

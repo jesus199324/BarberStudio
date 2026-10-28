@@ -165,3 +165,18 @@ div.opt{cursor:default}.opt span{color:var(--mu);font-size:.9rem}.opt[aria-press
 dialog.wide{max-width:min(720px,94vw)}fieldset{border:1px solid var(--bd);border-radius:10px;margin:0 0 12px;padding:8px 12px}
 .thumb{width:100%;max-width:240px;border-radius:10px;display:block;margin:6px 0}
 @media (max-width:560px){.wk{grid-template-columns:1fr 1fr}.wk label{grid-column:1/-1}}
+
+/* ===== Etapa 2: portada con imagen, efectos y ajustes de panel ===== */
+.hero.has-art{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:28px;align-items:center}
+.hero-art{position:relative;display:grid;place-items:center;perspective:900px}
+.hero-art::before{content:"";position:absolute;width:86%;aspect-ratio:1;border-radius:50%;background:conic-gradient(from 0deg,#ff5d6c,#7c5cff,#19c2ff,#ff5d6c);filter:blur(24px);opacity:.55;animation:spin 14s linear infinite}
+.hero-art img{position:relative;width:100%;max-width:340px;aspect-ratio:1;object-fit:cover;border-radius:30px;border:3px solid rgba(255,255,255,.35);box-shadow:0 24px 60px rgba(0,0,0,.45);transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .15s ease-out;animation:float 6s ease-in-out infinite}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes float{50%{translate:0 -8px}}
+@media (max-width:760px){.hero.has-art{grid-template-columns:1fr}.hero-art img{max-width:240px}}
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}.rv.in{opacity:1;transform:none}
+.cw{overflow:hidden;border-radius:var(--r)}.cw .pic{transition:transform .5s ease}.cw:hover .pic{transform:scale(1.06)}
+.svc li{transition:transform .2s}.svc li:hover{transform:translateX(6px)}
+h2{position:relative}h2::after{content:"";display:block;width:44px;height:4px;border-radius:4px;margin-top:8px;background:var(--g);transition:width .4s ease}main section:hover>h2::after{width:90px}
+.cal-h{text-transform:none}.cal-h span::first-letter,.dayh::first-letter{text-transform:uppercase}
+.wk.off input[type=time]{opacity:.35}.wk.off label{color:var(--mu)}
+button[disabled].btn{opacity:.5;cursor:not-allowed}
