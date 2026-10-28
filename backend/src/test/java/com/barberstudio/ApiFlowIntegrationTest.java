@@ -247,6 +247,25 @@ class ApiFlowIntegrationTest {
         mvc.perform(get("/api/public/shop-a/shop")).andExpect(jsonPath("$.logoUrl").doesNotExist());
     }
 
+    @Test
+    void settingsStoreSocialLinksAndRejectUnsafeUrls() throws Exception {
+        String base = "\"name\":\"Mi Barberia\",\"whatsapp\":\"099 111 222\",\"timezone\":\"America/Montevideo\",\"slotMinutes\":15,\"bufferMinutes\":0,\"maxDaysAhead\":60,\"minNoticeMinutes\":60";
+        mvc.perform(put("/api/settings").cookie(owner).contentType(JSON).content("{" + base + ",\"instagramUrl\":\"javascript:alert(1)\"}"))
+            .andExpect(status().isBadRequest());
+        mvc.perform(put("/api/settings").cookie(owner).contentType(JSON)
+            .content("{" + base + ",\"instagramUrl\":\"https://instagram.com/x\",\"city\":\"Montevideo\"}")).andExpect(status().isOk());
+        mvc.perform(get("/api/public/shop-a/shop")).andExpect(jsonPath("$.instagramUrl").value("https://instagram.com/x"))
+            .andExpect(jsonPath("$.city").value("Montevideo"));
+    }
+
+    @Test
+    void openingHoursAreDerivedFromBarberSchedules() throws Exception {
+        LocalDate d = workDay();
+        setHours(barberId, d, "10:00", "18:00");
+        mvc.perform(get("/api/public/shop-a/shop")).andExpect(jsonPath("$.openingHours[0].weekday").value(d.getDayOfWeek().getValue()))
+            .andExpect(jsonPath("$.openingHours[0].open").value("10:00")).andExpect(jsonPath("$.openingHours[0].close").value("18:00"));
+    }
+
     // ---------- helpers ----------
     private LocalDate workDay() { return LocalDate.now(ZONE).plusDays(7); }
 
