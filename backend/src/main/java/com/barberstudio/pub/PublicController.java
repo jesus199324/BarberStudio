@@ -49,7 +49,7 @@ public class PublicController {
     public record PublicService(Long id, String name, String description, BigDecimal price, int durationMinutes) {}
 
     public record PublicShop(String name, String slug, String aboutText, String address, String currency,
-                             String whatsappUrl, List<PublicService> services) {}
+                             String whatsappUrl, List<PublicService> services, String logoUrl) {}
 
     @GetMapping("/shop")
     @Transactional(readOnly = true)
@@ -58,7 +58,7 @@ public class PublicController {
         var list = services.findByBarbershopIdAndActiveTrueOrderByNameAsc(b.getId()).stream()
             .map(s -> new PublicService(s.getId(), s.getName(), s.getDescription(), s.getPrice(), s.getDurationMinutes())).toList();
         return new PublicShop(b.getName(), b.getSlug(), b.getAboutText(), b.getAddress(), b.getCurrency(),
-            WhatsAppLinks.link(b.getWhatsappE164(), "Hola, quisiera consultar por un turno."), list);
+            WhatsAppLinks.link(b.getWhatsappE164(), "Hola, quisiera consultar por un turno."), list, b.getLogoUrl());
     }
 
     @GetMapping("/styles")
