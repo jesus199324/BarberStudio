@@ -24,4 +24,6 @@ public class Barbershop extends BaseEntity {
     @Column(name = "auto_confirm") private boolean autoConfirm;
     @Column(name = "max_days_ahead") private int maxDaysAhead = 60;
     @Column(name = "min_notice_minutes") private int minNoticeMinutes = 60;
+    @Column(name = "logo_url") private String logoUrl;
+    @Column(name = "logo_key") private String logoKey;
 }
