@@ -9,6 +9,7 @@ import com.barberstudio.visit.VisitRepository;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -28,13 +29,15 @@ public class ClientService {
         @NotBlank(message = "El nombre es obligatorio") @Size(max = 120) String name,
         @NotBlank(message = "El WhatsApp es obligatorio") String whatsapp,
         @Size(max = 2000) String preferences,
-        @Size(max = 2000) String notes) {}
+        @Size(max = 2000) String notes,
+        LocalDate birthDate,
+        boolean marketingOptIn) {}
 
     public record ClientResponse(Long id, String name, String whatsapp, String preferences, String notes,
-                                 boolean archived, Instant createdAt) {
+                                 boolean archived, Instant createdAt, LocalDate birthDate, boolean marketingOptIn) {
         public static ClientResponse from(Client c) {
             return new ClientResponse(c.getId(), c.getName(), c.getWhatsappE164(), c.getPreferences(),
-                c.getNotes(), c.getArchivedAt() != null, c.getCreatedAt());
+                c.getNotes(), c.getArchivedAt() != null, c.getCreatedAt(), c.getBirthDate(), c.isMarketingOptIn());
         }
     }
 
@@ -104,5 +107,9 @@ public class ClientService {
         c.setWhatsappE164(phone);
         c.setPreferences(r.preferences());
         c.setNotes(r.notes());
+        c.setBirthDate(r.birthDate());
+        // La autorizacion para recibir mensajes queda registrada con su fecha; se puede revocar.
+        if (r.marketingOptIn() && !c.isMarketingOptIn()) { c.setMarketingOptIn(true); c.setMarketingOptInAt(Instant.now()); }
+        if (!r.marketingOptIn() && c.isMarketingOptIn()) { c.setMarketingOptIn(false); c.setMarketingOptInAt(null); }
     }
 }
