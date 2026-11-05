@@ -227,6 +227,7 @@ async function loadPublic() {
   try {
     const base = `/api/public/${SLUG}`;
     const [shop, barbers, styles, items] = await retry(() => Promise.all([api(base + '/shop'), api(base + '/barbers'), api(base + '/styles'), api(base + '/portfolio?size=50')]));
+    shop.name = String(shop.name || '').replace(/[\s_]+$/, '');   // sin guiones bajos finales (ej: el de Instagram)
     S.shop = shop; S.services = shop.services; S.barbers = barbers; S.styles = styles; S.items = items.items;
   } catch (e) { S.err = e.status === 404 ? 'No encontramos esta barbería. Revisá el identificador en config.js.' : e.message; }
   S.loading = false; render();

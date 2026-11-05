@@ -624,3 +624,13 @@ html[data-theme=skate] #intro .in-motto{animation-delay:2.8s;animation-duration:
 [data-theme=skate] .opt.tm:hover .tm-ph{filter:none}
 [data-theme=skate] .tm-ini{filter:none;color:var(--on);background:var(--acc)}
 .tm-dlg h2::after{margin-left:auto;margin-right:auto}
+
+/* Clasico: imagen de portada a color y mas compacta (titular y boton visibles en la primera pantalla) */
+[data-theme=shelby] .hero-art img,[data-theme=shelby] .hero-art:hover img{filter:none}
+[data-theme=shelby] .hero.centered{padding-top:clamp(26px,4vw,52px);padding-bottom:clamp(30px,5vw,64px)}
+[data-theme=shelby] .hero.centered .hero-art:not(.logo) img{max-width:min(340px,33vh)}
+@media (max-width:760px){[data-theme=shelby] .hero.centered .hero-art:not(.logo) img{max-width:min(240px,30vh);margin:14px 0 0 0}}
+/* Clasico: fotos del equipo en gris, a color al pasar el mouse (como el icono de portada) */
+[data-theme=shelby] img.tm-ph{filter:grayscale(1) contrast(1.05) brightness(.95)}
+@media (hover:hover){[data-theme=shelby] .opt.tm:hover img.tm-ph{filter:none}}
+[data-theme=shelby] .opt.tm:active img.tm-ph,[data-theme=shelby] .tm-dlg img.tm-ph{filter:none}
