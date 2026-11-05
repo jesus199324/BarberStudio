@@ -113,7 +113,7 @@ function pubHTML() {
  <section id="portfolio"><h2>Portfolio</h2><div class="row"><input id="q" type="search" placeholder="Buscar por nombre o etiqueta" aria-label="Buscar" style="max-width:280px" value="${esc(S.q)}"><button class="btn ghost" data-a="reset">Restablecer filtros</button></div><div id="chips" class="row" style="margin-top:10px"></div><div id="grid" class="grid"></div></section>
  ${expHTML(sh)}
  ${acercaHTML(sh)}
- ${S.barbers.length ? `<section id="sobre-mi"><h2>${S.barbers.length === 1 ? 'Sobre mí' : 'El equipo'}</h2>${aboutStoryHTML()}<div class="opts">${S.barbers.map(b => `<div class="opt"><b>${esc(b.name)}</b>${b.specialties ? `<span>${esc(b.specialties)}</span>` : ''}${b.bio ? `<span>${esc(b.bio)}</span>` : ''}</div>`).join('')}</div></section>` : ''}
+ ${S.barbers.length ? `<section id="sobre-mi"><h2>${S.barbers.length === 1 ? 'Sobre mí' : 'El equipo'}</h2>${aboutStoryHTML()}<div class="opts">${S.barbers.map(b => `<button class="opt tm" data-a="team" data-id="${b.id}" aria-label="Ver más sobre ${esc(b.name)}">${teamPhoto(b)}<b>${esc(b.name)}</b>${b.specialties ? `<span>${esc(b.specialties)}</span>` : ''}<span class="tm-more">Ver más</span></button>`).join('')}</div></section>` : ''}
  ${S.items.length ? `<section id="encontrar"><h2>Encontrá tu corte</h2><div class="qz" id="qz"></div></section>` : ''}
  ${marqHTML()}
  <section id="reservar"><h2>Reservá tu turno</h2><div id="book"></div></section>
@@ -379,7 +379,8 @@ async function reassign(id) {
 
 function bform(id) {
   const b = id ? P.barbers.find(x => x.id == id) : { serviceIds: P.services.map(s => s.id), active: true };
-  dopen(`<h2>${id ? 'Editar' : 'Nuevo'} barbero</h2><form data-f="barber" class="stack" novalidate><input type="hidden" name="id" value="${id || ''}">
+  const photoBlock = id ? `<form data-f="bphoto" class="stack" style="margin-bottom:14px"><input type="hidden" name="id" value="${id}"><div class="row" style="align-items:center">${teamPhoto(b)}<div class="stack" style="flex:1;min-width:200px"><label>Foto del barbero (JPG, PNG o WebP, hasta 5 MB)<input type="file" name="file" accept="image/jpeg,image/png,image/webp"></label><div class="row"><button class="btn sm">Subir foto</button>${b.photoUrl ? `<button type="button" class="btn ghost sm" data-a="bphotodel" data-id="${id}">Quitar foto</button>` : ''}</div></div></div><small class="err" id="e-bphoto"></small></form>` : '<p class="mu">Guardá el barbero y después podés subir su foto.</p>';
+  dopen(`<h2>${id ? 'Editar' : 'Nuevo'} barbero</h2>${photoBlock}<form data-f="barber" class="stack" novalidate><input type="hidden" name="id" value="${id || ''}">
  <label>Nombre<input name="name" value="${esc(b.name || '')}" maxlength="120"></label><label>Especialidades<input name="specialties" value="${esc(b.specialties || '')}"></label>
  <label>Descripción<textarea name="bio" rows="2">${esc(b.bio || '')}</textarea></label>
  <fieldset><legend>Servicios que realiza</legend>${P.services.map(s => `<label style="font-weight:400"><input type="checkbox" name="svc" value="${s.id}" ${b.serviceIds.includes(s.id) ? 'checked' : ''} style="width:auto"> ${esc(s.name)}</label>`).join('') || '<p class="mu">Primero cargá servicios.</p>'}</fieldset>
@@ -469,6 +470,11 @@ const A = {
   close: dclose, yes() { dclose(); if (pending) pending(); pending = null; },
   reload: loadPublic,
   theme(d, b) { const r = document.documentElement, cur = r.dataset.theme || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light'), n = TO[(TO.indexOf(cur) + 1) % TO.length]; r.dataset.theme = n; try { localStorage.setItem('theme', n); } catch (e) { /* ok */ } b.textContent = 'Tema: ' + TN[n]; },
+  team(d) {   // ficha del barbero: foto grande y descripcion breve (si la cargaron en el panel)
+    const b = S.barbers.find(x => x.id == d.id); if (!b) return;
+    dopen(`<div class="tm-dlg">${teamPhoto(b, true)}<h2>${esc(b.name)}</h2>${b.specialties ? `<p class="mu">${esc(b.specialties)}</p>` : ''}${b.bio ? `<p class="tm-bio">${esc(b.bio).replace(/\n/g, '<br>')}</p>` : '<p class="mu">Todavía no hay una descripción cargada.</p>'}<div class="row" style="justify-content:center"><button class="btn" data-a="teamgo">Reservar turno</button><button type="button" class="btn ghost" data-a="close">Cerrar</button></div></div>`);
+  },
+  teamgo() { dclose(); const el = document.getElementById('reservar'); if (el) el.scrollIntoView({ behavior: 'smooth' }); },
   go(d) { const h = document.querySelector('header.bar'); if (h) h.classList.remove('open'); const el = document.getElementById(d.t); if (el) el.scrollIntoView({ behavior: 'smooth' }); },
   // reserva pública
   svc(d) { B.svc = +d.id; B.barber = null; B.day = null; B.slots = []; B.slot = null; loadDays(); },
@@ -715,6 +721,11 @@ function waLink(phone, text) { return 'https://wa.me/' + String(phone).replace('
 function first(name) { return String(name || '').trim().split(/\s+/)[0]; }
 function bday(d) { const [y, m, dd] = String(d).split('-'); return `${dd}/${m}/${y}`; }
 
+function teamPhoto(b, big) {   // foto del barbero; si no hay, sus iniciales
+  if (b.photoUrl) return `<img class="tm-ph${big ? ' big' : ''}" loading="lazy" src="${esc(imgUrl(b.photoUrl))}" alt="Foto de ${esc(b.name)}">`;
+  const ini = String(b.name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+  return `<span class="tm-ph tm-ini${big ? ' big' : ''}" aria-hidden="true">${esc(ini)}</span>`;
+}
 function acercaHTML(sh) {   // "Acerca de": el texto lo escribe el dueño desde Ajustes (no hay texto inventado)
   if (!sh.aboutBody) return '';
   const paras = String(sh.aboutBody).split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
@@ -755,11 +766,22 @@ Object.assign(A, {
   async ifeat(d) { try { const r = await api(`/api/portfolio/${d.id}/feature`, { method: 'POST' }); toast(r.featured ? 'Marcado como destacado.' : 'Ya no es destacado.'); loadPanel(); } catch (e) { toast(e.message, 1); } },
   cpromo(d) { cpromo(d.id); },
   ptpl(d) { const t = P.tpls[d.i][1]; $('#pmsg').value = t; $('#pwa').href = waLink(P.promoPhone, t); },
+  async bphotodel(d) {
+    try { const r = await api(`/api/barbers/${d.id}/photo`, { method: 'DELETE' }); Object.assign(P.barbers.find(x => x.id == d.id), r); bform(d.id); toast('Foto quitada.'); loadPanel(); } catch (e) { toast(e.message, 1); }
+  },
   logodel() {
     ask('¿Quitar la imagen de portada?', async () => { try { await api('/api/settings/logo', { method: 'DELETE' }); toast('Imagen quitada.'); loadPanel(); } catch (e) { toast(e.message, 1); } }, 'Quitar');
   }
 });
 Object.assign(F, {
+  async bphoto(f) {
+    const file = f.file.files[0], e = $('#e-bphoto'); e.textContent = '';
+    if (!file) { e.textContent = 'Elegí una imagen.'; return; }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { e.textContent = 'Formato no permitido. Usá JPG, PNG o WebP.'; return; }
+    if (file.size > 5 * 1024 * 1024) { e.textContent = 'La imagen supera los 5 MB.'; return; }
+    const bid = f.querySelector('[name=id]').value, form = new FormData(); form.append('file', file);
+    try { const r = await api(`/api/barbers/${bid}/photo`, { method: 'POST', form }); Object.assign(P.barbers.find(x => x.id == bid), r); bform(bid); toast('Foto guardada.'); loadPanel(); } catch (x) { e.textContent = x.message; }
+  },
   async logo(f) {
     const file = f.file.files[0], e = $('#e-logo'); e.textContent = '';
     if (!file) { e.textContent = 'Elegí una imagen.'; return; }

@@ -272,6 +272,23 @@ class ApiFlowIntegrationTest {
     }
 
     @Test
+    void barberPhotoCanBeUploadedKeptOnEditShownPubliclyAndRemoved() throws Exception {
+        byte[] png = {(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0};
+        mvc.perform(multipart("/api/barbers/" + barberId + "/photo").file(new MockMultipartFile("file", "b.png", "image/png", png)).cookie(owner))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.photoUrl").isNotEmpty());
+        mvc.perform(put("/api/barbers/" + barberId).cookie(owner).contentType(JSON)
+            .content("{\"name\":\"Barbero Uno\",\"bio\":\"Le gustan los fades.\"}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.photoUrl").isNotEmpty());
+        mvc.perform(get("/api/public/shop-a/barbers"))
+            .andExpect(jsonPath("$[?(@.id==" + barberId + ")].photoUrl").isNotEmpty())
+            .andExpect(jsonPath("$[?(@.id==" + barberId + ")].bio").value("Le gustan los fades."));
+        mvc.perform(multipart("/api/barbers/" + barberId + "/photo").file(new MockMultipartFile("file", "x.png", "image/png", "no soy una imagen".getBytes())).cookie(owner))
+            .andExpect(status().is4xxClientError());
+        mvc.perform(delete("/api/barbers/" + barberId + "/photo").cookie(owner))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.photoUrl").doesNotExist());
+    }
+
+    @Test
     void openingHoursAreDerivedFromBarberSchedules() throws Exception {
         LocalDate d = workDay();
         setHours(barberId, d, "10:00", "18:00");

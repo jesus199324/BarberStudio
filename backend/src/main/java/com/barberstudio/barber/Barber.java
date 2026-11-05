@@ -16,6 +16,7 @@ public class Barber extends BaseEntity {
     private String name;
     private String bio;
     @Column(name = "photo_url") private String photoUrl;
+    @Column(name = "photo_key") private String photoKey;
     private String specialties;
     private boolean active = true;
     @Column(name = "sort_order") private int sortOrder;

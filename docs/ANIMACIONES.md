@@ -28,3 +28,10 @@ Paleta #0A0A0A / #252525 / #F1F0EB / #D93636, titulares en Anton. Solo CSS + JS 
 ## Fotos con movimiento al hacer scroll (ambos temas)
 Cada foto de `.cw` (portfolio) se desliza dentro de su marco con la propiedad `translate` (`--pp` se calcula en el listener de scroll con requestAnimationFrame); las columnas pares van en sentido contrario. Se desactiva con `prefers-reduced-motion`.
 Temas: **Clásico** (antes Shelby, `data-theme=shelby`) y **Urbano** (`data-theme=skate`). Intro de ~5 s en ambos.
+
+## Tema Clásico
+Se mantiene el estilo original. Único agregado: la última palabra del titular ("vos.") va en cursiva dorada.
+Nota técnica: en los temas con recorte (`clip-path`), este va sobre la foto y no sobre la tarjeta, porque el observador de scroll no detecta elementos totalmente recortados.
+
+## Equipo: foto y ficha del barbero
+Cada barbero muestra su foto (o sus iniciales si no hay) y al tocarlo se abre una ficha con foto grande, especialidades y descripción. La foto se sube desde Panel → Barberos → Editar (JPG, PNG o WebP, hasta 5 MB) y la descripción es el campo "Descripción" del mismo formulario. Migración V7 (`photo_key`).

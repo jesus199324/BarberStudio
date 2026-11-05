@@ -610,3 +610,17 @@ html[data-theme=skate] #intro .in-motto{animation-delay:2.8s;animation-duration:
 [data-theme=skate] .acerca .ac-body p:first-child{font-family:'Anton',Impact,sans-serif;font-size:clamp(1.5rem,4.2vw,2.6rem);line-height:1.05;text-transform:uppercase;letter-spacing:.02em}
 [data-theme=shelby] .acerca h2{text-align:center}
 [data-theme=shelby] .acerca h2::after{margin-left:auto;margin-right:auto}
+
+/* ===== equipo: foto y ficha del barbero ===== */
+.opt.tm{align-items:center;text-align:center;gap:6px;padding:18px 12px 14px}
+.tm-ph{width:104px;height:104px;border-radius:50%;object-fit:cover;display:block;border:1px solid var(--bd);transition:filter .4s,transform .4s}
+.tm-ph.big{width:150px;height:150px;margin:0 auto 6px}
+.tm-ini{display:grid;place-items:center;font:600 1.7rem 'Playfair Display',Georgia,serif;background:var(--bg);color:var(--gold,var(--blue))}
+.tm-more{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold,var(--blue));margin-top:4px}
+@media (hover:hover){.opt.tm:hover .tm-ph{transform:scale(1.05)}}
+.tm-dlg{text-align:center}.tm-dlg h2{margin:6px 0 2px}.tm-bio{max-width:46ch;margin:12px auto 18px;line-height:1.7}
+[data-theme=shelby] .tm-ph{border-color:rgba(185,154,101,.55);outline:1px solid rgba(185,154,101,.3);outline-offset:4px}
+[data-theme=skate] .tm-ph{border-radius:0;border:2px solid var(--tx);filter:grayscale(1) contrast(1.1);box-shadow:5px 5px 0 var(--acc);outline:0}
+[data-theme=skate] .opt.tm:hover .tm-ph{filter:none}
+[data-theme=skate] .tm-ini{filter:none;color:var(--on);background:var(--acc)}
+.tm-dlg h2::after{margin-left:auto;margin-right:auto}

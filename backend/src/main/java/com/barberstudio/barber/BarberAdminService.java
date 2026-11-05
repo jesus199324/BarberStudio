@@ -7,6 +7,8 @@ import com.barberstudio.catalog.BarberServiceRepository;
 import com.barberstudio.common.error.BusinessRuleException;
 import com.barberstudio.common.error.NotFoundException;
 import com.barberstudio.common.security.CurrentUser;
+import com.barberstudio.portfolio.ImageStorage;
+import com.barberstudio.portfolio.ImageValidator;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import java.time.Instant;
@@ -26,6 +28,7 @@ public class BarberAdminService {
     private final WorkingHoursRepository hours;
     private final ScheduleOverrideRepository overrides;
     private final AppointmentRepository appointments;
+    private final ImageStorage storage;
 
     public record BarberRequest(@NotBlank(message = "El nombre es obligatorio") @Size(max = 120) String name,
                                 @Size(max = 2000) String bio, @Size(max = 500) String photoUrl,
@@ -68,6 +71,30 @@ public class BarberAdminService {
         Barber b = find(id);
         apply(b, r);
         return resp(barbers.saveAndFlush(b));
+    }
+
+    /** Foto del barbero: mismas validaciones que las demas imagenes (formato real y 5 MB). */
+    @Transactional
+    public BarberResponse uploadPhoto(Long id, byte[] bytes) {
+        Barber b = find(id);
+        var stored = storage.store(CurrentUser.shopId(), bytes, ImageValidator.extensionFor(bytes));
+        String old = b.getPhotoKey();
+        b.setPhotoUrl(stored.url());
+        b.setPhotoKey(stored.key());
+        barbers.saveAndFlush(b);
+        if (old != null) storage.delete(old);
+        return resp(b);
+    }
+
+    @Transactional
+    public BarberResponse deletePhoto(Long id) {
+        Barber b = find(id);
+        String old = b.getPhotoKey();
+        b.setPhotoUrl(null);
+        b.setPhotoKey(null);
+        barbers.saveAndFlush(b);
+        if (old != null) storage.delete(old);
+        return resp(b);
     }
 
     @Transactional
@@ -150,7 +177,7 @@ public class BarberAdminService {
     private void apply(Barber b, BarberRequest r) {
         b.setName(r.name().trim());
         b.setBio(r.bio());
-        b.setPhotoUrl(r.photoUrl());
+        if (r.photoUrl() != null && !r.photoUrl().isBlank()) b.setPhotoUrl(r.photoUrl().trim());   // sin valor: se conserva la foto subida
         b.setSpecialties(r.specialties());
         if (r.active() != null) b.setActive(r.active());
         if (r.sortOrder() != null) b.setSortOrder(r.sortOrder());

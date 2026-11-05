@@ -2,10 +2,13 @@ package com.barberstudio.barber;
 
 import com.barberstudio.barber.BarberAdminService.*;
 import jakarta.validation.Valid;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/barbers")
@@ -22,6 +25,14 @@ public class BarberController {
 
     @PutMapping("/{id}")
     public BarberResponse update(@PathVariable Long id, @Valid @RequestBody BarberRequest r) { return service.update(id, r); }
+
+    @PostMapping(value = "/{id}/photo", consumes = "multipart/form-data")
+    public BarberResponse uploadPhoto(@PathVariable Long id, @RequestPart("file") MultipartFile file) {
+        try { return service.uploadPhoto(id, file.getBytes()); } catch (IOException e) { throw new UncheckedIOException(e); }
+    }
+
+    @DeleteMapping("/{id}/photo")
+    public BarberResponse deletePhoto(@PathVariable Long id) { return service.deletePhoto(id); }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
