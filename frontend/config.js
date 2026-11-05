@@ -8,7 +8,7 @@ window.CFG = {
   urbanPalette:'amarillo', // amarillo | naranja | acido
   defaultTheme: 'shelby',                  // tema para quien entra por primera vez: light | dark | street | shelby
   heroTitle: 'El estilo habla por vos.',   // titular de la portada (tema Shelby)
-  heroSub: 'Cortes con carácter. Identidad propia. Cultura urbana.',
+  heroSub: 'Barbería clásica en Montevideo. Trato cercano, cortes a tu medida.',
   tagline: "Gentlemen's Barber",            // bajo el nombre, en la portada
   footerTagline: 'Más que un corte, es una actitud.',
   heroLayout: 'centered',                  // 'centered' (logo al medio, como el tablero) o 'split' (texto a la izquierda, imagen a la derecha)

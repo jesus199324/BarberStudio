@@ -759,7 +759,7 @@ function reveal() {   // secciones y elementos aparecen de a poco al hacer scrol
 }
 
 function philHTML(sh) {
-  return `<section id="filosofia" class="phil"><span class="gl" aria-hidden="true"></span><h2 class="sr">Filosofía</h2><p class="phil-q">${esc(CFG.heroTitle || 'El estilo habla por vos.')}</p><p class="phil-s">${esc(CFG.philosophy || 'Cada corte tiene su técnica. Cada detalle, su intención.')}</p>${sh.aboutText ? `<p class="phil-a">${esc(sh.aboutText)}</p>` : ''}<span class="gl" aria-hidden="true"></span></section>`;
+  return `<section id="filosofia" class="phil"><span class="gl" aria-hidden="true"></span><h2 class="sr">Filosofía</h2><p class="phil-q">${esc(CFG.philosophy || 'Cada corte tiene su técnica. Cada detalle, su intención.')}</p>${sh.aboutText ? `<p class="phil-a">${esc(sh.aboutText)}</p>` : ''}<span class="gl" aria-hidden="true"></span></section>`;
 }
 
 function expHTML(sh) {
