@@ -678,3 +678,6 @@ header.bar.open .menu-btn .pb::before{animation:poleSpin .8s linear infinite}
   html[data-theme] header.bar.open nav .chip:nth-child(2){transition-delay:.04s}html[data-theme] header.bar.open nav .chip:nth-child(3){transition-delay:.08s}html[data-theme] header.bar.open nav .chip:nth-child(4){transition-delay:.12s}html[data-theme] header.bar.open nav .chip:nth-child(5){transition-delay:.16s}html[data-theme] header.bar.open nav .chip:nth-child(6){transition-delay:.2s}html[data-theme] header.bar.open nav .chip:nth-child(n+7){transition-delay:.24s}
   html[data-theme] header.bar nav .chip:hover,html[data-theme] header.bar nav .chip:active{border-left-color:var(--red);color:var(--red)}
 }
+
+/* Al abrir un trabajo del portfolio, la foto se ve a color de entrada (la grilla sigue en gris hasta pasar el mouse) */
+html[data-theme] dialog .pic,html[data-theme] dialog #mainpic{filter:none!important;transition:opacity .17s}
