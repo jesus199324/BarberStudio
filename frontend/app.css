@@ -634,3 +634,13 @@ html[data-theme=skate] #intro .in-motto{animation-delay:2.8s;animation-duration:
 [data-theme=shelby] img.tm-ph{filter:grayscale(1) contrast(1.05) brightness(.95)}
 @media (hover:hover){[data-theme=shelby] .opt.tm:hover img.tm-ph{filter:none}}
 [data-theme=shelby] .opt.tm:active img.tm-ph,[data-theme=shelby] .tm-dlg img.tm-ph{filter:none}
+
+/* Portfolio: video de Instagram dentro del trabajo */
+.cw .card{position:relative}
+.igb{position:absolute;z-index:2;left:8px;top:8px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.62);color:#fff;font-size:.8rem;padding-left:2px;pointer-events:none}
+#igbox{position:relative}
+#igbox .igplay{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);white-space:nowrap}
+#igbox .igframe{display:block;width:100%;max-width:540px;height:min(640px,72vh);margin:0 auto;border:0;border-radius:8px;background:#fff}
+#igbox>a{display:block;width:max-content;margin:10px auto 0}
+.ig-follow{text-align:center;margin:26px 0 0}
+[data-theme=shelby] .igb{border-radius:0}[data-theme=skate] .igb{border-radius:0;background:var(--acc);color:var(--on)}

@@ -289,6 +289,21 @@ class ApiFlowIntegrationTest {
     }
 
     @Test
+    void portfolioItemCanCarryAnInstagramLinkThatIsValidatedAndNormalized() throws Exception {
+        long style = id(postJson("/api/styles", "{\"name\":\"Fade IG\"}"));
+        long ok = id(postJson("/api/portfolio", "{\"styleId\":" + style + ",\"title\":\"Con video\","
+            + "\"instagramUrl\":\"https://instagram.com/ikonostudio_/reel/ABCdef12345/?igsh=xyz\"}"));
+        mvc.perform(get("/api/portfolio/" + ok).cookie(owner)).andExpect(status().isOk())
+            .andExpect(jsonPath("$.instagramUrl").value("https://www.instagram.com/reel/ABCdef12345/"));
+        mvc.perform(post("/api/portfolio").cookie(owner).contentType(JSON)
+            .content("{\"styleId\":" + style + ",\"title\":\"Malo\",\"instagramUrl\":\"https://evil.example.com/reel/ABCdef12345/\"}"))
+            .andExpect(status().isUnprocessableEntity());
+        mvc.perform(put("/api/portfolio/" + ok).cookie(owner).contentType(JSON)
+            .content("{\"styleId\":" + style + ",\"title\":\"Con video\",\"instagramUrl\":\"\"}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.instagramUrl").doesNotExist());
+    }
+
+    @Test
     void openingHoursAreDerivedFromBarberSchedules() throws Exception {
         LocalDate d = workDay();
         setHours(barberId, d, "10:00", "18:00");

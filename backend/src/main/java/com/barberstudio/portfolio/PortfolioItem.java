@@ -26,6 +26,7 @@ public class PortfolioItem extends BaseEntity {
     private String title;
     private String description;
     private boolean featured;
+    @Column(name = "instagram_url") private String instagramUrl;
     @Column(name = "sort_order") private int sortOrder;
 
     @JdbcTypeCode(SqlTypes.ARRAY)

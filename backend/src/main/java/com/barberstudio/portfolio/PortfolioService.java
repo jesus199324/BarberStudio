@@ -17,6 +17,8 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -36,7 +38,8 @@ public class PortfolioService {
     public record ItemRequest(@NotNull(message = "Elegí un estilo") Long styleId,
                               @NotBlank(message = "El título es obligatorio") @Size(max = 140) String title,
                               @Size(max = 2000) String description,
-                              List<String> tags, Boolean featured, Integer sortOrder) {}
+                              List<String> tags, Boolean featured, Integer sortOrder,
+                              @Size(max = 300) String instagramUrl) {}
 
     public record ImageResponse(Long id, String url, String altText, int position, boolean cover) {}
 
@@ -44,7 +47,8 @@ public class PortfolioService {
 
     public record ItemResponse(Long id, String title, String description, StyleRef style, List<String> tags,
                                PortfolioStatus status, Instant publishedAt, String coverUrl,
-                               List<ImageResponse> images, String whatsappUrl, boolean featured, int sortOrder) {}
+                               List<ImageResponse> images, String whatsappUrl, boolean featured, int sortOrder,
+                               String instagramUrl) {}
 
     // ================= publico =================
     @Transactional(readOnly = true)
@@ -202,6 +206,19 @@ public class PortfolioService {
         item.setTags(normalizeTags(r.tags()));
         if (r.featured() != null) item.setFeatured(r.featured());
         if (r.sortOrder() != null) item.setSortOrder(r.sortOrder());
+        item.setInstagramUrl(normalizeInstagram(r.instagramUrl()));
+    }
+
+    private static final Pattern INSTAGRAM_POST = Pattern.compile(
+        "^https?://(?:www\\.)?instagram\\.com/(?:[A-Za-z0-9._]+/)?(p|reel|reels|tv)/([A-Za-z0-9_-]{5,40})/?(?:\\?.*)?$");
+
+    /** Acepta solo enlaces a publicaciones/reels de Instagram y los deja en forma canonica (sin parametros). */
+    static String normalizeInstagram(String raw) {
+        if (raw == null || raw.isBlank()) return null;
+        Matcher m = INSTAGRAM_POST.matcher(raw.trim());
+        if (!m.matches()) throw new BusinessRuleException("El enlace de Instagram debe ser de una publicación o reel (instagram.com/p/… o /reel/…).");
+        String kind = m.group(1).equals("reels") ? "reel" : m.group(1);
+        return "https://www.instagram.com/" + kind + "/" + m.group(2) + "/";
     }
 
     private String[] normalizeTags(List<String> tags) {
@@ -219,6 +236,6 @@ public class PortfolioService {
             "Hola, vi el corte " + i.getTitle() + " en tu portfolio y me gustaría consultar disponibilidad para hacerme uno.");
         return new ItemResponse(i.getId(), i.getTitle(), i.getDescription(),
             new StyleRef(i.getStyle().getId(), i.getStyle().getName(), i.getStyle().getSlug()),
-            Arrays.asList(i.getTags()), i.getStatus(), i.getPublishedAt(), cover, imgs, wa, i.isFeatured(), i.getSortOrder());
+            Arrays.asList(i.getTags()), i.getStatus(), i.getPublishedAt(), cover, imgs, wa, i.isFeatured(), i.getSortOrder(), i.getInstagramUrl());
     }
 }

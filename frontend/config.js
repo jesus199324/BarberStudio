@@ -3,7 +3,7 @@ window.CFG = {
   slug: 'jesuss-sk8',                      // identificador de tu barbería (se crea con BOOTSTRAP_SHOP_SLUG o el nombre)
   devSlug: 'barber-studio-demo',           // barbería de demostración al correr en local (perfil dev)
   devApi: 'http://localhost:8080',         // backend local
-  instagram: 'https://www.instagram.com/jesuss.sk8/',
+  instagram: 'https://www.instagram.com/ikonostudio_/',
   finaleImage:'',      // foto opcional para el cierre del tema Urbano (tuya)
   urbanPalette:'amarillo', // amarillo | naranja | acido
   defaultTheme: 'shelby',                  // tema para quien entra por primera vez: light | dark | street | shelby

@@ -63,7 +63,7 @@ const fv = f => Object.fromEntries(new FormData(f));
 /* ============================ SITIO PÚBLICO ============================ */
 function header() {
   const th = document.documentElement.dataset.theme;
-  const links = [['inicio', 'Inicio'], ['servicios', 'Servicios'], ['portfolio', 'Portfolio'],
+  const links = [['inicio', 'Inicio'], ['servicios', 'Servicios'], ...(S.items.length ? [['portfolio', 'Portfolio']] : []),
     ...(S.shop && S.shop.aboutBody ? [['acerca', 'Acerca de']] : []),
     ...(S.barbers.length ? [['sobre-mi', S.barbers.length === 1 ? 'Sobre mí' : 'Equipo']] : []), ['reservar', 'Reservas'], ['contacto', 'Contacto']];
   return `<header class="bar"><button class="brand" data-a="go" data-t="inicio" aria-label="Ir al inicio">${esc(S.shop ? S.shop.name : '')}</button><button class="menu-btn" data-a="menu" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button><nav aria-label="Principal">${S.mode === 'public'
@@ -110,7 +110,7 @@ function pubHTML() {
  <section id="servicios"><h2>Servicios</h2>${S.services.length
     ? `<div class="svc-grid">${S.services.map(s => `<article class="svc-card"><div><h3>${esc(s.name)}</h3>${s.description ? `<p>${esc(s.description)}</p>` : ''}</div><div class="svc-meta"><span>${s.durationMinutes} min</span><b>${money(s.price)}</b></div><button class="btn sm ghost" data-a="svcbook" data-id="${s.id}">Reservar</button></article>`).join('')}</div>`
     : '<div class="empty">Muy pronto vas a ver acá los servicios y precios.</div>'}</section>
- <section id="portfolio"><h2>Portfolio</h2><div class="row"><input id="q" type="search" placeholder="Buscar por nombre o etiqueta" aria-label="Buscar" style="max-width:280px" value="${esc(S.q)}"><button class="btn ghost" data-a="reset">Restablecer filtros</button></div><div id="chips" class="row" style="margin-top:10px"></div><div id="grid" class="grid"></div></section>
+ ${S.items.length ? `<section id="portfolio"><h2>Portfolio</h2><div class="row"><input id="q" type="search" placeholder="Buscar por nombre o etiqueta" aria-label="Buscar" style="max-width:280px" value="${esc(S.q)}"><button class="btn ghost" data-a="reset">Restablecer filtros</button></div><div id="chips" class="row" style="margin-top:10px"></div><div id="grid" class="grid"></div>${igFollow()}</section>` : ''}
  ${expHTML(sh)}
  ${acercaHTML(sh)}
  ${S.barbers.length ? `<section id="sobre-mi"><h2>${S.barbers.length === 1 ? 'Sobre mí' : 'El equipo'}</h2>${aboutStoryHTML()}<div class="opts">${S.barbers.map(b => `<button class="opt tm" data-a="team" data-id="${b.id}" aria-label="Ver más sobre ${esc(b.name)}">${teamPhoto(b)}<b>${esc(b.name)}</b>${b.specialties ? `<span>${esc(b.specialties)}</span>` : ''}<span class="tm-more">Ver más</span></button>`).join('')}</div></section>` : ''}
@@ -195,9 +195,11 @@ async function loadSlots() {
 /* ---- portfolio público ---- */
 const styleOf = id => S.styles.find(s => s.id === id);
 const coverAlt = i => ((i.images.find(x => x.cover) || i.images[0] || {}).altText) || i.title;
-const card = i => `<div class="cw ${i.featured ? 'feat' : ''}">${i.featured ? '<span class="ribbon">Destacado</span>' : ''}<button class="heart" data-a="fav" data-id="${i.id}" aria-pressed="${S.fav.has(i.id)}" aria-label="Favorito: ${esc(i.title)}">♥</button><button class="card" data-a="open" data-id="${i.id}">${i.coverUrl
+const card = i => `<div class="cw ${i.featured ? 'feat' : ''}">${i.featured ? '<span class="ribbon">Destacado</span>' : ''}<button class="heart" data-a="fav" data-id="${i.id}" aria-pressed="${S.fav.has(i.id)}" aria-label="Favorito: ${esc(i.title)}">♥</button><button class="card" data-a="open" data-id="${i.id}">${i.instagramUrl ? '<span class="igb" aria-label="Con video">▶</span>' : ''}${i.coverUrl
   ? `<img class="pic" loading="lazy" src="${esc(imgUrl(i.coverUrl))}" alt="${esc(coverAlt(i))}">`
   : `<div class="ph" style="--h:${(i.id * 47) % 360}" role="img" aria-label="${esc(i.title)}"></div>`}<div class="cap"><b>${esc(i.title)}</b><small>${esc(i.style.name)}</small></div></button></div>`;
+
+const igFollow = () => { const u = (S.shop && S.shop.instagramUrl) || CFG.instagram; return u ? `<p class="ig-follow"><a class="btn ghost" target="_blank" rel="noopener" href="${esc(u)}">Ver más trabajos en Instagram</a></p>` : ''; };
 
 function drawGallery() {
   if (!$('#chips')) return;
@@ -214,7 +216,7 @@ function drawGallery() {
 function openItem(id) {
   const i = S.items.find(x => x.id === id); if (!i) return;
   const main = i.images[0];
-  dopen(`${main ? `<img id="mainpic" class="pic" style="aspect-ratio:4/3" src="${esc(imgUrl(main.url))}" alt="${esc(main.altText)}">` : `<div class="ph" style="--h:${(i.id * 47) % 360};aspect-ratio:4/3"></div>`}
+  dopen(`<div id="igbox">${main ? `<img id="mainpic" class="pic" style="aspect-ratio:4/3" src="${esc(imgUrl(main.url))}" alt="${esc(main.altText)}">` : `<div class="ph" style="--h:${(i.id * 47) % 360};aspect-ratio:4/3"></div>`}${i.instagramUrl ? `<button class="btn igplay" data-a="igplay" data-id="${i.id}">▶ Ver el video</button>` : ''}</div>
  ${i.images.length > 1 ? `<div class="thumbs">${i.images.map(m => `<img src="${esc(imgUrl(m.url))}" alt="${esc(m.altText)}" data-a="pic" data-src="${esc(imgUrl(m.url))}">`).join('')}</div>` : ''}
  <h2>${esc(i.title)}</h2><p class="mu">${esc(i.style.name)}</p>${i.description ? `<p>${esc(i.description)}</p>` : ''}
  ${i.tags.length ? `<p class="row">${i.tags.map(t => `<span class="bd">#${esc(t)}</span>`).join('')}</p>` : ''}
@@ -222,13 +224,16 @@ function openItem(id) {
  <button class="btn ghost" data-a="nav" data-d="-1" data-id="${i.id}" aria-label="Anterior">‹</button><button class="btn ghost" data-a="nav" data-d="1" data-id="${i.id}" aria-label="Siguiente">›</button><button class="btn ghost" data-a="close">Cerrar</button></div>`);
 }
 
+/* Orden de servicios: primero el corte simple y las combinaciones; el resto conserva el orden del servidor */
+const svcRank = s => { const n = String(s.name || '').trim().toLowerCase(); return n === 'corte' ? 0 : n.startsWith('corte') ? 1 : 2; };
+
 async function loadPublic() {
   S.loading = true; S.err = null; render();
   try {
     const base = `/api/public/${SLUG}`;
     const [shop, barbers, styles, items] = await retry(() => Promise.all([api(base + '/shop'), api(base + '/barbers'), api(base + '/styles'), api(base + '/portfolio?size=50')]));
     shop.name = String(shop.name || '').replace(/[\s_]+$/, '');   // sin guiones bajos finales (ej: el de Instagram)
-    S.shop = shop; S.services = shop.services; S.barbers = barbers; S.styles = styles; S.items = items.items;
+    S.shop = shop; S.services = shop.services.slice().sort((a, b) => svcRank(a) - svcRank(b)); S.barbers = barbers; S.styles = styles; S.items = items.items;
   } catch (e) { S.err = e.status === 404 ? 'No encontramos esta barbería. Revisá el identificador en config.js.' : e.message; }
   S.loading = false; render();
 }
@@ -458,6 +463,7 @@ function pform(id) {
  <label>Título<input name="title" maxlength="140" value="${esc(it ? it.title : '')}"></label><label>Estilo<select name="style">${groups}</select></label>
  <label>Descripción<textarea name="desc" rows="2">${esc(it ? it.description || '' : '')}</textarea></label><label>Etiquetas (separadas por coma)<input name="tags" value="${esc(it ? it.tags.join(', ') : '')}"></label>
  <label>${it && it.images.length ? 'Agregar otra imagen' : 'Imagen'} (JPG, PNG o WebP, máx. 5 MB)<input type="file" name="img" accept="image/jpeg,image/png,image/webp"></label>
+ <label>Enlace de Instagram (opcional: video o publicación para mostrar en el trabajo)<input name="ig" type="url" maxlength="300" placeholder="https://www.instagram.com/reel/..." value="${esc(it ? it.instagramUrl || '' : '')}"></label>
  <label>Texto alternativo de la imagen (accesibilidad)<input name="alt" placeholder="Ej: Degradé bajo visto de costado"></label>
  ${it && it.images.length ? `<div class="thumbs">${it.images.map(m => `<img src="${esc(imgUrl(m.url))}" alt="${esc(m.altText)}">`).join('')}</div>` : ''}
  <label style="font-weight:400"><input type="checkbox" name="pub" ${it && it.status === 'PUBLISHED' ? 'checked' : ''} style="width:auto"> Publicar en el sitio</label>
@@ -489,7 +495,8 @@ const A = {
   // portfolio público
   cat(d) { S.cat = d.v; S.sty = ''; drawGallery(); }, sty(d) { S.sty = d.v; drawGallery(); },
   reset() { S.cat = ''; S.sty = ''; S.q = ''; const q = $('#q'); if (q) q.value = ''; drawGallery(); },
-  open(d) { openItem(+d.id); }, pic(d) { const m = $('#mainpic'); if (!m) return; m.style.opacity = 0; setTimeout(() => { m.src = d.src; m.style.opacity = 1; }, 170); },
+  open(d) { openItem(+d.id); },
+  igplay(d) { const i = S.items.find(x => x.id == d.id), b = $('#igbox'); if (!i || !i.instagramUrl || !b) return; b.innerHTML = `<iframe class="igframe" src="${esc(i.instagramUrl)}embed/" title="Video de Instagram: ${esc(i.title)}" loading="lazy" allowfullscreen scrolling="no"></iframe><a class="btn ghost sm" target="_blank" rel="noopener" href="${esc(i.instagramUrl)}">Abrir en Instagram</a>`; }, pic(d) { const m = $('#mainpic'); if (!m) return; m.style.opacity = 0; setTimeout(() => { m.src = d.src; m.style.opacity = 1; }, 170); },
   nav(d) { const l = S.list.length ? S.list : S.items, k = l.findIndex(i => i.id == d.id); openItem(l[(k + Number(d.d) + l.length) % l.length].id); },
   ref(d) { S.ref = S.items.find(i => i.id == d.id); dclose(); renderBook(); toast('Elegí servicio, día y hora: tu corte de referencia va incluido.'); const el = $('#reservar'); if (el) el.scrollIntoView({ behavior: 'smooth' }); },
   // panel
@@ -596,7 +603,7 @@ const F = {
     if (!fd.get('title').trim()) return err('Ingresá un título.');
     if (file && !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return err('Formato no permitido. Usá JPG, PNG o WebP.');
     if (file && file.size > 5 * 1024 * 1024) return err('La imagen supera los 5 MB.');
-    const body = { styleId: Number(fd.get('style')), title: fd.get('title').trim(), description: fd.get('desc') || null, tags: fd.get('tags').split(',').map(s => s.trim()).filter(Boolean), featured: !!fd.get('feat'), sortOrder: Number(fd.get('ord') || 0) };
+    const body = { styleId: Number(fd.get('style')), title: fd.get('title').trim(), description: fd.get('desc') || null, tags: fd.get('tags').split(',').map(s => s.trim()).filter(Boolean), featured: !!fd.get('feat'), sortOrder: Number(fd.get('ord') || 0), instagramUrl: (fd.get('ig') || '').trim() || null };
     try {
       let it = await api(id ? `/api/portfolio/${id}` : '/api/portfolio', { method: id ? 'PUT' : 'POST', body });
       if (file) { const form = new FormData(); form.append('file', file); form.append('alt', fd.get('alt') || it.title); it = await api(`/api/portfolio/${it.id}/images`, { method: 'POST', form }); }
