@@ -64,6 +64,7 @@ const fv = f => Object.fromEntries(new FormData(f));
 function header() {
   const th = document.documentElement.dataset.theme;
   const links = [['inicio', 'Inicio'], ['servicios', 'Servicios'], ['portfolio', 'Portfolio'],
+    ...(S.shop && S.shop.aboutBody ? [['acerca', 'Acerca de']] : []),
     ...(S.barbers.length ? [['sobre-mi', S.barbers.length === 1 ? 'Sobre mí' : 'Equipo']] : []), ['reservar', 'Reservas'], ['contacto', 'Contacto']];
   return `<header class="bar"><button class="brand" data-a="go" data-t="inicio" aria-label="Ir al inicio">${esc(S.shop ? S.shop.name : '')}</button><button class="menu-btn" data-a="menu" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button><nav aria-label="Principal">${S.mode === 'public'
     ? links.map(([t, l]) => `<button class="chip" data-a="go" data-t="${t}">${l}</button>`).join('') + '<a class="chip" href="#/panel">Panel</a>'
@@ -102,7 +103,7 @@ function pubHTML() {
   if (S.err) return `<div class="empty"><p>${esc(S.err)}</p><button class="btn" data-a="reload">Reintentar</button></div>`;
   const sh = S.shop;
   return `<div class="pole"></div>
- <section class="hero ${sh.logoUrl ? 'has-art' : ''} ${sh.heroBgUrl ? 'has-bg' : ''} ${sh.logoUrl && sh.heroArtMode === 'logo' ? 'art-logo' : ''} ${CFG.heroLayout === 'centered' ? 'centered' : ''}" id="inicio">${sh.heroBgUrl ? `<div class="hero-bg" data-par=".18" aria-hidden="true" style="background-image:url('${esc(imgUrl(sh.heroBgUrl))}')"></div>` : ''}<div class="hero-txt"><p class="h-brand">${esc(sh.name)}${CFG.tagline ? `<span class="h-tag">${esc(CFG.tagline)}</span>` : ''}</p><h1><span class="hd">${esc(sh.name)}</span><span class="hs">${esc(CFG.heroTitle || 'El estilo habla por vos.')}</span><span class="hu">${urbanTitle()}</span></h1><p class="h-about">${esc(sh.aboutText || 'Elegí tu servicio, tu barbero y reservá tu turno online.')}</p><p class="h-sub">${esc(CFG.heroSub || 'Cortes con carácter. Identidad propia. Cultura urbana.')}</p>
+ <section class="hero ${sh.logoUrl ? 'has-art' : ''} ${sh.heroBgUrl ? 'has-bg' : ''} ${sh.logoUrl && sh.heroArtMode === 'logo' ? 'art-logo' : ''} ${CFG.heroLayout === 'centered' ? 'centered' : ''}" id="inicio">${sh.heroBgUrl ? `<div class="hero-bg" data-par=".18" aria-hidden="true" style="background-image:url('${esc(imgUrl(sh.heroBgUrl))}')"></div>` : ''}<div class="hero-txt"><p class="h-brand">${esc(sh.name)}${CFG.tagline ? `<span class="h-tag">${esc(CFG.tagline)}</span>` : ''}</p><h1><span class="hd">${esc(sh.name)}</span><span class="hs">${goldTail(CFG.heroTitle || 'El estilo habla por vos.')}</span><span class="hu">${urbanTitle()}</span></h1><p class="h-about">${esc(sh.aboutText || 'Elegí tu servicio, tu barbero y reservá tu turno online.')}</p><p class="h-sub">${esc(CFG.heroSub || 'Cortes con carácter. Identidad propia. Cultura urbana.')}</p>
  <div class="row"><button class="btn" data-a="go" data-t="reservar">Reservar turno</button><a class="btn wa" target="_blank" rel="noopener" href="${esc(sh.whatsappUrl)}">Consultar por WhatsApp</a></div>${sh.city ? `<p class="h-where">${esc(sh.city)} · ${esc(CFG.country || 'Uruguay')}</p>` : ''}</div>${sh.logoUrl ? `<div class="hero-art ${sh.heroArtMode === 'logo' ? 'logo' : ''}"><img src="${esc(imgUrl(sh.logoUrl))}" alt="${esc(sh.name)}"></div>` : ''}${stickersHTML()}</section>
  ${marqHTML()}
  ${philHTML(sh)}
@@ -111,6 +112,7 @@ function pubHTML() {
     : '<div class="empty">Muy pronto vas a ver acá los servicios y precios.</div>'}</section>
  <section id="portfolio"><h2>Portfolio</h2><div class="row"><input id="q" type="search" placeholder="Buscar por nombre o etiqueta" aria-label="Buscar" style="max-width:280px" value="${esc(S.q)}"><button class="btn ghost" data-a="reset">Restablecer filtros</button></div><div id="chips" class="row" style="margin-top:10px"></div><div id="grid" class="grid"></div></section>
  ${expHTML(sh)}
+ ${acercaHTML(sh)}
  ${S.barbers.length ? `<section id="sobre-mi"><h2>${S.barbers.length === 1 ? 'Sobre mí' : 'El equipo'}</h2>${aboutStoryHTML()}<div class="opts">${S.barbers.map(b => `<div class="opt"><b>${esc(b.name)}</b>${b.specialties ? `<span>${esc(b.specialties)}</span>` : ''}${b.bio ? `<span>${esc(b.bio)}</span>` : ''}</div>`).join('')}</div></section>` : ''}
  ${S.items.length ? `<section id="encontrar"><h2>Encontrá tu corte</h2><div class="qz" id="qz"></div></section>` : ''}
  ${marqHTML()}
@@ -330,6 +332,8 @@ const T = {
  <label>Nombre del negocio<input name="name" value="${esc(s.name)}"></label><label>WhatsApp<input name="whatsapp" value="${esc(s.whatsapp)}" placeholder="099 123 456"></label>
  <label>Dirección<input name="address" value="${esc(s.address || '')}"></label><label>Zona horaria<input name="timezone" value="${esc(s.timezone)}"></label>
  <label style="grid-column:1/-1">Presentación (se muestra en la portada)<textarea name="aboutText" rows="3">${esc(s.aboutText || '')}</textarea></label>
+ <label style="grid-column:1/-1">Título de la sección "Acerca de" (ej: Acerca de IKONOSTUDIO)<input name="aboutTitle" maxlength="120" value="${esc(s.aboutTitle || '')}"></label>
+ <label style="grid-column:1/-1">Texto de "Acerca de" (qué representa tu barbería; separá los párrafos con una línea en blanco; si lo dejás vacío, la sección no se muestra)<textarea name="aboutBody" rows="8" maxlength="4000">${esc(s.aboutBody || '')}</textarea></label>
  ${n('slotMinutes', 'Intervalo entre turnos (minutos)', 5, 120)}${n('bufferMinutes', 'Tiempo de preparación entre turnos (minutos)', 0, 120)}${n('maxDaysAhead', 'Reservas hasta (días hacia adelante)', 1, 365)}${n('minNoticeMinutes', 'Aviso mínimo para reservar (minutos)', 0, 10080)}
  <label>Barrio<input name="neighborhood" value="${esc(s.neighborhood || '')}"></label><label>Ciudad<input name="city" value="${esc(s.city || '')}"></label>
  <label style="grid-column:1/-1">Enlace de Google Maps (para el botón "Cómo llegar")<input name="mapsUrl" placeholder="https://maps.app.goo.gl/..." value="${esc(s.mapsUrl || '')}"></label>
@@ -596,7 +600,7 @@ const F = {
   async settings(f) {
     const d = fv(f), n = k => Number(d[k]);
     const body = { name: d.name, aboutText: d.aboutText || null, whatsapp: d.whatsapp, address: d.address || null, timezone: d.timezone, slotMinutes: n('slotMinutes'), bufferMinutes: n('bufferMinutes'), autoConfirm: !!d.autoConfirm, maxDaysAhead: n('maxDaysAhead'), minNoticeMinutes: n('minNoticeMinutes'),
-      neighborhood: d.neighborhood || null, city: d.city || null, mapsUrl: d.mapsUrl || null, instagramUrl: d.instagramUrl || null, tiktokUrl: d.tiktokUrl || null, youtubeUrl: d.youtubeUrl || null, hoursNote: d.hoursNote || null, heroArtMode: d.heroArtMode || 'photo' };
+      neighborhood: d.neighborhood || null, city: d.city || null, mapsUrl: d.mapsUrl || null, instagramUrl: d.instagramUrl || null, tiktokUrl: d.tiktokUrl || null, youtubeUrl: d.youtubeUrl || null, hoursNote: d.hoursNote || null, aboutTitle: d.aboutTitle || null, aboutBody: d.aboutBody || null, heroArtMode: d.heroArtMode || 'photo' };
     try { await api('/api/settings', { method: 'PUT', body }); err(''); toast('Ajustes guardados.'); loadPublic(); } catch (e) { err(e.message); }
   }
 };
@@ -711,6 +715,16 @@ function waLink(phone, text) { return 'https://wa.me/' + String(phone).replace('
 function first(name) { return String(name || '').trim().split(/\s+/)[0]; }
 function bday(d) { const [y, m, dd] = String(d).split('-'); return `${dd}/${m}/${y}`; }
 
+function acercaHTML(sh) {   // "Acerca de": el texto lo escribe el dueño desde Ajustes (no hay texto inventado)
+  if (!sh.aboutBody) return '';
+  const paras = String(sh.aboutBody).split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
+    .map(p => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
+  return `<section id="acerca" class="acerca"><h2>${esc(sh.aboutTitle || 'Acerca de ' + sh.name)}</h2><div class="ac-body">${paras}</div></section>`;
+}
+function goldTail(t) {   // la ultima palabra del titular va en cursiva dorada (tema Clasico)
+  const w = String(t || '').trim().split(' '), last = w.pop();
+  return (w.length ? esc(w.join(' ')) + ' ' : '') + `<em class="gw">${esc(last)}</em>`;
+}
 function reveal() {   // secciones y elementos aparecen de a poco al hacer scroll
   if (!('IntersectionObserver' in window)) return;
   const secs = [...document.querySelectorAll('main > section')];

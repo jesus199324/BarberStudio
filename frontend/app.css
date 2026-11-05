@@ -505,8 +505,9 @@ header.bar.open .menu-btn span:nth-child(3){transform:translateY(-7px) rotate(-4
 [data-theme=skate] .heart{border-radius:0;background:rgba(10,10,10,.75)}
 [data-theme=skate] .heart[aria-pressed=true]{background:var(--acc);color:var(--on);box-shadow:none}
 [data-theme=skate] #grid>*{animation:gridIn .45s ease both}
-[data-theme=skate] .cw.rv-item{opacity:1;clip-path:inset(0 0 100% 0);transition:clip-path .9s cubic-bezier(.7,0,.2,1) var(--d,0ms);animation:none}
-[data-theme=skate] .cw.rv-item.in{clip-path:inset(-24px);animation:none}
+[data-theme=skate] .cw.rv-item{opacity:1;animation:none}
+[data-theme=skate] .cw.rv-item .pic,[data-theme=skate] .cw.rv-item .ph{clip-path:inset(0 0 100% 0);transition:clip-path .9s cubic-bezier(.7,0,.2,1) var(--d,0ms),filter .5s,transform .6s}
+[data-theme=skate] .cw.rv-item.in .pic,[data-theme=skate] .cw.rv-item.in .ph{clip-path:inset(0)}
 /* experiencia y filosofia */
 [data-theme=skate] .exp{background:#0A0A0A;border-block:4px solid var(--red)}
 [data-theme=skate] .exp-bg{transform:translateY(var(--py2,0px))}
@@ -550,7 +551,7 @@ header.bar.open .menu-btn span:nth-child(3){transform:translateY(-7px) rotate(-4
 @media (hover:hover){[data-theme=skate] .socials a:hover span{background-size:100% 2px}}
 /* celulares y movimiento reducido */
 @media (max-width:760px){[data-theme=skate] .marq{margin:22px -2%}.marq-in{animation-duration:26s}[data-theme=skate] .exp-list li{font-size:clamp(1.9rem,11vw,3rem)}}
-@media (prefers-reduced-motion:reduce){[data-theme=skate] .cw.rv-item{clip-path:none!important}[data-theme=skate] main.pub>section h2{opacity:1!important;transform:none!important}.finale .fin-q span,.finale .fin-brand{clip-path:none!important}.marq-in{animation:none!important}}
+@media (prefers-reduced-motion:reduce){[data-theme=skate] .cw.rv-item .pic,[data-theme=skate] .cw.rv-item .ph{clip-path:none!important}[data-theme=skate] main.pub>section h2{opacity:1!important;transform:none!important}.finale .fin-q span,.finale .fin-brand{clip-path:none!important}.marq-in{animation:none!important}}
 /* sin scroll horizontal en celulares (marquee, parallax y titulares grandes quedan recortados dentro de la pantalla) */
 html[data-theme=skate],html[data-theme=skate] body{overflow-x:clip}
 [data-theme=skate] .marq{overflow:hidden;max-width:100vw}
@@ -567,7 +568,7 @@ html[data-theme=skate] #intro .in-desc{animation-delay:2.1s;animation-duration:.
 html[data-theme=skate] #intro .in-motto{animation-delay:2.8s;animation-duration:.9s}
 /* agilidad: transiciones cortas, sin esperas encadenadas */
 [data-theme=skate] .rv{transition-duration:.4s!important;--rise:14px}
-[data-theme=skate] .cw.rv-item{transition:clip-path .45s cubic-bezier(.7,0,.2,1) calc(var(--d,0ms)/3)}
+[data-theme=skate] .cw.rv-item .pic,[data-theme=skate] .cw.rv-item .ph{transition:clip-path .45s cubic-bezier(.7,0,.2,1) calc(var(--d,0ms)/3),filter .5s,transform .6s}
 [data-theme=skate] .rv-item,[data-theme=skate] .rv-item.in{animation-duration:.4s!important;animation-delay:0s!important}
 [data-theme=skate] .phil p,[data-theme=skate] .phil.in .phil-s,[data-theme=skate] .phil.in .phil-a{transition:opacity .35s ease,transform .35s ease;transition-delay:0s}
 [data-theme=skate] .phil .gl{transition-duration:.35s;transition-delay:0s;height:30px}
@@ -593,3 +594,19 @@ html[data-theme=skate] #intro .in-motto{animation-delay:2.8s;animation-duration:
 #intro .in-name{animation-duration:1s;animation-delay:1.2s}
 #intro .in-desc{animation-delay:2.1s;animation-duration:.8s}
 #intro .in-motto{animation-delay:2.8s;animation-duration:.9s}
+
+/* ===== CLASICO: ultima palabra del titular en cursiva dorada ===== */
+[data-theme=shelby] .hero .hs .gw{font-style:italic;color:var(--gold)}
+
+/* ===== seccion "Acerca de" ===== */
+.acerca .ac-body{max-width:68ch}
+.acerca .ac-body p{margin:0 0 1.15em;font-size:1.04rem;line-height:1.8;color:var(--mu)}
+.acerca .ac-body p:first-child{color:var(--tx);font-size:1.18rem}
+[data-theme=shelby] .acerca{text-align:center}
+[data-theme=shelby] .acerca h2{justify-content:center}
+[data-theme=shelby] .acerca .ac-body{margin:0 auto}
+[data-theme=shelby] .acerca .ac-body p:first-child{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:clamp(1.25rem,2.8vw,1.6rem);line-height:1.5}
+[data-theme=skate] .acerca .ac-body{border-left:6px solid var(--acc);padding-left:clamp(14px,3vw,30px)}
+[data-theme=skate] .acerca .ac-body p:first-child{font-family:'Anton',Impact,sans-serif;font-size:clamp(1.5rem,4.2vw,2.6rem);line-height:1.05;text-transform:uppercase;letter-spacing:.02em}
+[data-theme=shelby] .acerca h2{text-align:center}
+[data-theme=shelby] .acerca h2::after{margin-left:auto;margin-right:auto}

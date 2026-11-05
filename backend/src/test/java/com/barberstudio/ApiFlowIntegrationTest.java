@@ -259,6 +259,19 @@ class ApiFlowIntegrationTest {
     }
 
     @Test
+    void aboutSectionIsEditableAndPublic() throws Exception {
+        String base = "\"name\":\"Mi Barberia\",\"whatsapp\":\"099 111 222\",\"timezone\":\"America/Montevideo\",\"slotMinutes\":15,\"bufferMinutes\":0,\"maxDaysAhead\":60,\"minNoticeMinutes\":60";
+        mvc.perform(put("/api/settings").cookie(owner).contentType(JSON)
+            .content("{" + base + ",\"aboutTitle\":\"Acerca de nosotros\",\"aboutBody\":\"Primer parrafo.\\n\\nSegundo parrafo.\"}")).andExpect(status().isOk());
+        mvc.perform(get("/api/public/shop-a/shop")).andExpect(jsonPath("$.aboutTitle").value("Acerca de nosotros"))
+            .andExpect(jsonPath("$.aboutBody").value("Primer parrafo.\n\nSegundo parrafo."));
+        mvc.perform(put("/api/settings").cookie(owner).contentType(JSON)
+            .content("{" + base + ",\"aboutBody\":\"" + "x".repeat(4001) + "\"}")).andExpect(status().isBadRequest());
+        mvc.perform(put("/api/settings").cookie(owner).contentType(JSON).content("{" + base + "}")).andExpect(status().isOk());
+        mvc.perform(get("/api/public/shop-a/shop")).andExpect(jsonPath("$.aboutBody").doesNotExist());
+    }
+
+    @Test
     void openingHoursAreDerivedFromBarberSchedules() throws Exception {
         LocalDate d = workDay();
         setHours(barberId, d, "10:00", "18:00");

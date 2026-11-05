@@ -49,18 +49,22 @@ public class SettingsController {
         @Size(max = 120) String city,
         @Size(max = 500) @Pattern(regexp = URL_RX, message = URL_MSG) String mapsUrl,
         @Size(max = 300) String hoursNote,
-        @Pattern(regexp = "photo|logo", message = "Modo de imagen inválido") String heroArtMode) {}
+        @Pattern(regexp = "photo|logo", message = "Modo de imagen inválido") String heroArtMode,
+        @Size(max = 120) String aboutTitle,
+        @Size(max = 4000) String aboutBody) {}
 
     public record SettingsResponse(String name, String slug, String aboutText, String whatsapp, String address,
                                    String timezone, String currency, int slotMinutes, int bufferMinutes,
                                    boolean autoConfirm, int maxDaysAhead, int minNoticeMinutes, String logoUrl,
                                    String instagramUrl, String tiktokUrl, String youtubeUrl, String neighborhood,
-                                   String city, String mapsUrl, String hoursNote, String heroBgUrl, String heroArtMode) {
+                                   String city, String mapsUrl, String hoursNote, String heroBgUrl, String heroArtMode,
+                                   String aboutTitle, String aboutBody) {
         static SettingsResponse from(Barbershop b) {
             return new SettingsResponse(b.getName(), b.getSlug(), b.getAboutText(), b.getWhatsappE164(), b.getAddress(),
                 b.getTimezone(), b.getCurrency(), b.getSlotMinutes(), b.getBufferMinutes(), b.isAutoConfirm(),
                 b.getMaxDaysAhead(), b.getMinNoticeMinutes(), b.getLogoUrl(),
-                b.getInstagramUrl(), b.getTiktokUrl(), b.getYoutubeUrl(), b.getNeighborhood(), b.getCity(), b.getMapsUrl(), b.getHoursNote(), b.getHeroBgUrl(), b.getHeroArtMode());
+                b.getInstagramUrl(), b.getTiktokUrl(), b.getYoutubeUrl(), b.getNeighborhood(), b.getCity(), b.getMapsUrl(), b.getHoursNote(), b.getHeroBgUrl(), b.getHeroArtMode(),
+                b.getAboutTitle(), b.getAboutBody());
         }
     }
 
@@ -92,6 +96,8 @@ public class SettingsController {
         b.setMapsUrl(nz(r.mapsUrl()));
         b.setHoursNote(nz(r.hoursNote()));
         if (r.heroArtMode() != null) b.setHeroArtMode(r.heroArtMode());
+        b.setAboutTitle(nz(r.aboutTitle()));
+        b.setAboutBody(nz(r.aboutBody()));
         return SettingsResponse.from(shops.save(b));
     }
 
