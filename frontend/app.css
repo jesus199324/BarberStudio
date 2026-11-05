@@ -644,3 +644,11 @@ html[data-theme=skate] #intro .in-motto{animation-delay:2.8s;animation-duration:
 #igbox>a{display:block;width:max-content;margin:10px auto 0}
 .ig-follow{text-align:center;margin:26px 0 0}
 [data-theme=shelby] .igb{border-radius:0}[data-theme=skate] .igb{border-radius:0;background:var(--acc);color:var(--on)}
+
+/* Clasico, portada en modo "Logo": el fondo negro del PNG se funde con la foto (sin recuadro) y no empuja el titular fuera de la primera pantalla */
+[data-theme=shelby] .hero-art.logo img{mix-blend-mode:screen;-webkit-mask-image:linear-gradient(to right,transparent,#000 9%,#000 91%,transparent),linear-gradient(to bottom,transparent,#000 9%,#000 91%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right,transparent,#000 9%,#000 91%,transparent),linear-gradient(to bottom,transparent,#000 9%,#000 91%,transparent);mask-composite:intersect}
+[data-theme=shelby] .hero.centered .hero-art.logo img{max-width:min(420px,88%)!important;max-height:38vh;width:auto;margin-inline:auto}
+
+/* La imagen del portfolio se recorta dentro de su propio marco: con el zoom del scroll ya no tapa el titulo */
+.cw .pw{display:block;overflow:hidden;border-radius:var(--r);position:relative}
+[data-theme=shelby] .cw .pw,[data-theme=skate] .cw .pw{border-radius:0}

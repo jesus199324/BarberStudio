@@ -195,9 +195,9 @@ async function loadSlots() {
 /* ---- portfolio público ---- */
 const styleOf = id => S.styles.find(s => s.id === id);
 const coverAlt = i => ((i.images.find(x => x.cover) || i.images[0] || {}).altText) || i.title;
-const card = i => `<div class="cw ${i.featured ? 'feat' : ''}">${i.featured ? '<span class="ribbon">Destacado</span>' : ''}<button class="heart" data-a="fav" data-id="${i.id}" aria-pressed="${S.fav.has(i.id)}" aria-label="Favorito: ${esc(i.title)}">♥</button><button class="card" data-a="open" data-id="${i.id}">${i.instagramUrl ? '<span class="igb" aria-label="Con video">▶</span>' : ''}${i.coverUrl
+const card = i => `<div class="cw ${i.featured ? 'feat' : ''}">${i.featured ? '<span class="ribbon">Destacado</span>' : ''}<button class="heart" data-a="fav" data-id="${i.id}" aria-pressed="${S.fav.has(i.id)}" aria-label="Favorito: ${esc(i.title)}">♥</button><button class="card" data-a="open" data-id="${i.id}">${i.instagramUrl ? '<span class="igb" aria-label="Con video">▶</span>' : ''}<span class="pw">${i.coverUrl
   ? `<img class="pic" loading="lazy" src="${esc(imgUrl(i.coverUrl))}" alt="${esc(coverAlt(i))}">`
-  : `<div class="ph" style="--h:${(i.id * 47) % 360}" role="img" aria-label="${esc(i.title)}"></div>`}<div class="cap"><b>${esc(i.title)}</b><small>${esc(i.style.name)}</small></div></button></div>`;
+  : `<div class="ph" style="--h:${(i.id * 47) % 360}" role="img" aria-label="${esc(i.title)}"></div>`}</span><div class="cap"><b>${esc(i.title)}</b><small>${esc(i.style.name)}</small></div></button></div>`;
 
 const igFollow = () => { const u = (S.shop && S.shop.instagramUrl) || CFG.instagram; return u ? `<p class="ig-follow"><a class="btn ghost" target="_blank" rel="noopener" href="${esc(u)}">Ver más trabajos en Instagram</a></p>` : ''; };
 
@@ -462,7 +462,7 @@ function pform(id) {
   dopen(`<h2>${id ? 'Editar' : 'Nueva'} publicación</h2><form data-f="item" class="stack" novalidate><input type="hidden" name="id" value="${id || ''}">
  <label>Título<input name="title" maxlength="140" value="${esc(it ? it.title : '')}"></label><label>Estilo<select name="style">${groups}</select></label>
  <label>Descripción<textarea name="desc" rows="2">${esc(it ? it.description || '' : '')}</textarea></label><label>Etiquetas (separadas por coma)<input name="tags" value="${esc(it ? it.tags.join(', ') : '')}"></label>
- <label>${it && it.images.length ? 'Agregar otra imagen' : 'Imagen'} (JPG, PNG o WebP, máx. 5 MB)<input type="file" name="img" accept="image/jpeg,image/png,image/webp"></label>
+ <label>${it && it.images.length ? 'Agregar más imágenes' : 'Imágenes'} (JPG, PNG o WebP, máx. 5 MB cada una, hasta 8 por publicación; podés elegir varias a la vez)<input type="file" name="img" multiple accept="image/jpeg,image/png,image/webp"></label>
  <label>Enlace de Instagram (opcional: video o publicación para mostrar en el trabajo)<input name="ig" type="url" maxlength="300" placeholder="https://www.instagram.com/reel/..." value="${esc(it ? it.instagramUrl || '' : '')}"></label>
  <label>Texto alternativo de la imagen (accesibilidad)<input name="alt" placeholder="Ej: Degradé bajo visto de costado"></label>
  ${it && it.images.length ? `<div class="thumbs">${it.images.map(m => `<img src="${esc(imgUrl(m.url))}" alt="${esc(m.altText)}">`).join('')}</div>` : ''}
@@ -599,14 +599,16 @@ const F = {
     try { await api('/api/styles', { method: 'POST', body: { name: d.name.trim(), category: d.category } }); toast('Estilo agregado.'); loadPanel(); } catch (e) { toast(e.message, 1); }
   },
   async item(f) {
-    const fd = new FormData(f), id = fd.get('id'), file = f.img.files[0];
+    const fd = new FormData(f), id = fd.get('id'), files = [...f.img.files];
     if (!fd.get('title').trim()) return err('Ingresá un título.');
-    if (file && !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return err('Formato no permitido. Usá JPG, PNG o WebP.');
-    if (file && file.size > 5 * 1024 * 1024) return err('La imagen supera los 5 MB.');
+    if (files.some(x => !['image/jpeg', 'image/png', 'image/webp'].includes(x.type))) return err('Formato no permitido. Usá JPG, PNG o WebP.');
+    if (files.some(x => x.size > 5 * 1024 * 1024)) return err('Alguna imagen supera los 5 MB.');
+    const had = id ? ((P.items.find(x => x.id == id) || {}).images || []).length : 0;
+    if (had + files.length > 8) return err('Máximo 8 imágenes por publicación (ya tiene ' + had + ').');
     const body = { styleId: Number(fd.get('style')), title: fd.get('title').trim(), description: fd.get('desc') || null, tags: fd.get('tags').split(',').map(s => s.trim()).filter(Boolean), featured: !!fd.get('feat'), sortOrder: Number(fd.get('ord') || 0), instagramUrl: (fd.get('ig') || '').trim() || null };
     try {
       let it = await api(id ? `/api/portfolio/${id}` : '/api/portfolio', { method: id ? 'PUT' : 'POST', body });
-      if (file) { const form = new FormData(); form.append('file', file); form.append('alt', fd.get('alt') || it.title); it = await api(`/api/portfolio/${it.id}/images`, { method: 'POST', form }); }
+      for (const file of files) { const form = new FormData(); form.append('file', file); form.append('alt', fd.get('alt') || it.title); it = await api(`/api/portfolio/${it.id}/images`, { method: 'POST', form }); }   // una por una, en orden
       if (fd.get('pub') && it.status !== 'PUBLISHED') await api(`/api/portfolio/${it.id}/publish`, { method: 'POST' });
       done('Publicación guardada.');
     } catch (e) { err(e.message); }
