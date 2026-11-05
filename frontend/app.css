@@ -652,3 +652,29 @@ html[data-theme=skate] #intro .in-motto{animation-delay:2.8s;animation-duration:
 /* La imagen del portfolio se recorta dentro de su propio marco: con el zoom del scroll ya no tapa el titulo */
 .cw .pw{display:block;overflow:hidden;border-radius:var(--r);position:relative}
 [data-theme=shelby] .cw .pw,[data-theme=skate] .cw .pw{border-radius:0}
+
+/* Clasico: portada y cinta dorada de borde a borde de la pantalla (el resto del contenido sigue centrado) */
+html[data-theme=shelby],html[data-theme=shelby] body{overflow-x:clip}
+[data-theme=shelby] main.pub>.pole,[data-theme=shelby] main.pub>.hero{width:100vw;max-width:none;margin-left:calc(50% - 50vw);margin-right:0}
+[data-theme=shelby] .hero.centered{padding-inline:max(20px,calc((100vw - 1000px) / 2))}
+
+/* ===== Menu movil: poste de barbero ===== */
+.menu-btn{display:none}
+.menu-btn .mp{display:flex;flex-direction:column;align-items:center;font-style:normal}
+.menu-btn .cp{display:block;width:21px;height:5px;background:var(--red);border-radius:1px}
+.menu-btn .pb{display:block;position:relative;overflow:hidden;width:15px;height:31px;margin:1px 0;border:1.5px solid var(--red);border-radius:7px;background:rgba(0,0,0,.35)}
+.menu-btn .pb::before{content:"";position:absolute;left:-6px;right:-6px;top:-16px;bottom:-16px;background:repeating-linear-gradient(-45deg,var(--red) 0 4px,transparent 4px 8px)}
+header.bar.open .menu-btn .pb::before{animation:poleSpin .8s linear infinite}
+@keyframes poleSpin{to{transform:translateY(11.31px)}}
+.menu-btn:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){header.bar.open .menu-btn .pb::before{animation:none}}
+@media (max-width:760px){
+  html[data-theme] header.bar{flex-wrap:nowrap}
+  html[data-theme] header.bar button.menu-btn{display:grid;place-items:center;width:46px;height:46px;margin:-6px -6px -6px auto;padding:0;background:none;border:0;cursor:pointer}
+  html[data-theme] header.bar nav{position:absolute;left:0;right:0;top:100%;flex:none;min-width:0;flex-direction:column;align-items:stretch;flex-wrap:nowrap;overflow:hidden;max-height:0;opacity:0;pointer-events:none;padding:0 18px;background:#0e0e0e;border-bottom:0 solid var(--red);transition:max-height .45s ease,opacity .3s ease,padding .3s}
+  html[data-theme] header.bar.open nav{max-height:calc(100vh - 70px);overflow-y:auto;opacity:1;pointer-events:auto;padding:8px 18px 18px;border-bottom:2px solid var(--red)}
+  html[data-theme] header.bar nav .chip{flex:none;width:100%;text-align:left;padding:15px 4px 15px 16px;font-size:1rem;border-bottom:1px solid rgba(255,255,255,.08);border-left:3px solid transparent;opacity:0;transform:translateX(-14px);transition:opacity .3s ease,transform .35s ease,border-color .2s}
+  html[data-theme] header.bar.open nav .chip{opacity:1;transform:none}
+  html[data-theme] header.bar.open nav .chip:nth-child(2){transition-delay:.04s}html[data-theme] header.bar.open nav .chip:nth-child(3){transition-delay:.08s}html[data-theme] header.bar.open nav .chip:nth-child(4){transition-delay:.12s}html[data-theme] header.bar.open nav .chip:nth-child(5){transition-delay:.16s}html[data-theme] header.bar.open nav .chip:nth-child(6){transition-delay:.2s}html[data-theme] header.bar.open nav .chip:nth-child(n+7){transition-delay:.24s}
+  html[data-theme] header.bar nav .chip:hover,html[data-theme] header.bar nav .chip:active{border-left-color:var(--red);color:var(--red)}
+}

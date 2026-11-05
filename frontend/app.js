@@ -66,7 +66,7 @@ function header() {
   const links = [['inicio', 'Inicio'], ['servicios', 'Servicios'], ...(S.items.length ? [['portfolio', 'Portfolio']] : []),
     ...(S.shop && S.shop.aboutBody ? [['acerca', 'Acerca de']] : []),
     ...(S.barbers.length ? [['sobre-mi', S.barbers.length === 1 ? 'Sobre mí' : 'Equipo']] : []), ['reservar', 'Reservas'], ['contacto', 'Contacto']];
-  return `<header class="bar"><button class="brand" data-a="go" data-t="inicio" aria-label="Ir al inicio">${esc(S.shop ? S.shop.name : '')}</button><button class="menu-btn" data-a="menu" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button><nav aria-label="Principal">${S.mode === 'public'
+  return `<header class="bar"><button class="brand" data-a="go" data-t="inicio" aria-label="Ir al inicio">${esc(S.shop ? S.shop.name : '')}</button><button class="menu-btn" data-a="menu" aria-label="Abrir menú" aria-expanded="false"><i class="mp" aria-hidden="true"><b class="cp"></b><b class="pb"></b><b class="cp"></b></i></button><nav aria-label="Principal">${S.mode === 'public'
     ? links.map(([t, l]) => `<button class="chip" data-a="go" data-t="${t}">${l}</button>`).join('') + '<a class="chip" href="#/panel">Panel</a>'
     : '<a class="chip" href="#/">Ver sitio</a>'}<button class="chip" data-a="theme">Tema: ${TN[th] || 'Auto'}</button></nav></header>`;
 }
@@ -898,3 +898,11 @@ Object.assign(A, {
 });
 
 loadPublic();
+
+
+/* Menu movil (poste de barbero): se cierra al tocar fuera o con Esc */
+(function () {
+  const close = () => { const h = document.querySelector('header.bar.open'); if (!h) return; h.classList.remove('open'); const b = h.querySelector('.menu-btn'); if (b) { b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-label', 'Abrir menú'); } };
+  document.addEventListener('click', e => { const h = document.querySelector('header.bar.open'); if (h && !h.contains(e.target)) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+})();
