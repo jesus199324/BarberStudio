@@ -57,7 +57,8 @@ public class PublicController {
     public record PublicShop(String name, String slug, String aboutText, String address, String currency,
                              String whatsappUrl, List<PublicService> services, String logoUrl,
                              String instagramUrl, String tiktokUrl, String youtubeUrl, String neighborhood, String city,
-                             String mapsUrl, String hoursNote, List<PublicHours> openingHours) {}
+                             String mapsUrl, String hoursNote, List<PublicHours> openingHours,
+                             String heroBgUrl, String heroArtMode) {}
 
     public record PublicHours(int weekday, String open, String close) {}
 
@@ -70,7 +71,7 @@ public class PublicController {
         var hours = openingHours(b);
         return new PublicShop(b.getName(), b.getSlug(), b.getAboutText(), b.getAddress(), b.getCurrency(),
             WhatsAppLinks.link(b.getWhatsappE164(), "Hola, quisiera consultar por un turno."), list, b.getLogoUrl(),
-            b.getInstagramUrl(), b.getTiktokUrl(), b.getYoutubeUrl(), b.getNeighborhood(), b.getCity(), b.getMapsUrl(), b.getHoursNote(), hours);
+            b.getInstagramUrl(), b.getTiktokUrl(), b.getYoutubeUrl(), b.getNeighborhood(), b.getCity(), b.getMapsUrl(), b.getHoursNote(), hours, b.getHeroBgUrl(), b.getHeroArtMode());
     }
 
     @GetMapping("/styles")

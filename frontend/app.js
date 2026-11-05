@@ -21,8 +21,8 @@ const REASONS = { FERIADO: 'Feriado', VACACIONES: 'Vacaciones', CIERRE_EXTRAORDI
 const ST = { PENDING: 'Pendiente', CONFIRMED: 'Confirmado', COMPLETED: 'Completado', CANCELLED: 'Cancelado' };
 const DAYLBL = { AVAILABLE: 'Disponible', FULL: 'Completo', CLOSED: 'Cerrado', FAR: 'Todavía no disponible', PAST: '' };
 const CATS = [['CORTE', 'Cortes'], ['COLOR', 'Color'], ['BARBA', 'Barba'], ['TATUAJE', 'Tatuajes']];
-const TN = { light: 'Blanco', dark: 'Azul', street: 'Neón' }, TO = ['light', 'dark', 'street'];
-try { const t = localStorage.getItem('theme'); if (TO.includes(t)) document.documentElement.dataset.theme = t; } catch (e) { /* sin almacenamiento */ }
+const TN = { shelby: 'Clásico', skate: 'Urbano' }, TO = ['shelby', 'skate'];   // solo dos temas
+try { const t = localStorage.getItem('theme'); if (TO.includes(t)) document.documentElement.dataset.theme = t; else if (TO.includes(CFG.defaultTheme)) document.documentElement.dataset.theme = CFG.defaultTheme; } catch (e) { if (TO.includes(CFG.defaultTheme)) document.documentElement.dataset.theme = CFG.defaultTheme; }
 
 async function api(path, o = {}) {
   const init = { method: o.method || 'GET', credentials: 'include', headers: {} };
@@ -63,14 +63,16 @@ const fv = f => Object.fromEntries(new FormData(f));
 /* ============================ SITIO PÚBLICO ============================ */
 function header() {
   const th = document.documentElement.dataset.theme;
-  return `<header class="bar"><span class="brand">${esc(S.shop ? S.shop.name : '')}</span><nav aria-label="Principal">${S.mode === 'public'
-    ? '<button class="chip" data-a="go" data-t="reservar">Reservar</button><button class="chip" data-a="go" data-t="portfolio">Portfolio</button><a class="chip" href="#/panel">Panel</a>'
+  const links = [['inicio', 'Inicio'], ['servicios', 'Servicios'], ['portfolio', 'Portfolio'],
+    ...(S.barbers.length ? [['sobre-mi', S.barbers.length === 1 ? 'Sobre mí' : 'Equipo']] : []), ['reservar', 'Reservas'], ['contacto', 'Contacto']];
+  return `<header class="bar"><button class="brand" data-a="go" data-t="inicio" aria-label="Ir al inicio">${esc(S.shop ? S.shop.name : '')}</button><button class="menu-btn" data-a="menu" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button><nav aria-label="Principal">${S.mode === 'public'
+    ? links.map(([t, l]) => `<button class="chip" data-a="go" data-t="${t}">${l}</button>`).join('') + '<a class="chip" href="#/panel">Panel</a>'
     : '<a class="chip" href="#/">Ver sitio</a>'}<button class="chip" data-a="theme">Tema: ${TN[th] || 'Auto'}</button></nav></header>`;
 }
 
 function render() {
   S.mode = location.hash.startsWith('#/panel') ? 'panel' : 'public';
-  $('#app').innerHTML = header() + `<main>${S.mode === 'public' ? pubHTML() : panelShell()}</main>` + (S.mode === 'public' && S.shop ? footer() : '');
+  $('#app').innerHTML = header() + `<main class="${S.mode === 'public' ? 'pub' : ''}">${S.mode === 'public' ? pubHTML() : panelShell()}</main>` + (S.mode === 'public' && S.shop ? footer() : '') + (S.mode === 'public' && S.shop ? fabBar() : '');
   if (S.mode === 'public' && !S.loading && !S.err) { renderBook(); drawGallery(); drawQz(); reveal(); }
   if (S.mode === 'panel') loadPanel();
 }
@@ -87,11 +89,12 @@ function footer() {
   const hours = sh.openingHours || [];
   const day = d => { const h = hours.find(x => x.weekday === d); return `<li><span>${WD[d]}</span><b>${h ? esc(h.open) + ' a ' + esc(h.close) : 'Cerrado'}</b></li>`; };
   const place = [sh.address, [sh.neighborhood, sh.city].filter(Boolean).join(', ')].filter(Boolean);
-  return `<footer class="site-foot"><div class="fgrid">
+  return `<footer class="site-foot" id="contacto"><div class="fgrid">
+ <div><h3>Contacto</h3><p>Escribinos para consultar o reservar.</p><a class="btn wa sm" target="_blank" rel="noopener" href="${esc(sh.whatsappUrl)}">Escribir por WhatsApp</a></div>
  ${links.length ? `<div><h3>Redes</h3><div class="socials">${links.map(([k, u, l]) => `<a href="${esc(u)}" target="_blank" rel="noopener" aria-label="${l}">${ic[k]}<span>${l}</span></a>`).join('')}</div></div>` : ''}
  ${place.length || sh.mapsUrl ? `<div><h3>Ubicación</h3>${place.map(p => `<p>${esc(p)}</p>`).join('')}${sh.mapsUrl ? `<a class="btn sm ghost" href="${esc(sh.mapsUrl)}" target="_blank" rel="noopener">Cómo llegar</a>` : ''}</div>` : ''}
  ${hours.length || sh.hoursNote ? `<div><h3>Horarios</h3><ul class="hrs">${[1, 2, 3, 4, 5, 6, 7].map(day).join('')}</ul>${sh.hoursNote ? `<p class="mu">${esc(sh.hoursNote)}</p>` : ''}</div>` : ''}
- </div><p class="mu copy">${esc(sh.name)}</p></footer>`;
+ </div><p class="mu copy">${CFG.footerTagline ? `<span class="foot-tag">${esc(CFG.footerTagline)}</span>` : ''}${esc(sh.name)}</p></footer>`;
 }
 
 function pubHTML() {
@@ -99,15 +102,20 @@ function pubHTML() {
   if (S.err) return `<div class="empty"><p>${esc(S.err)}</p><button class="btn" data-a="reload">Reintentar</button></div>`;
   const sh = S.shop;
   return `<div class="pole"></div>
- <section class="hero ${sh.logoUrl ? 'has-art' : ''}"><div class="hero-txt"><h1>${esc(sh.name)}</h1><p>${esc(sh.aboutText || 'Elegí tu servicio, tu barbero y reservá tu turno online.')}</p>
- <div class="row"><button class="btn" data-a="go" data-t="reservar">Reservar turno</button><a class="btn wa" target="_blank" rel="noopener" href="${esc(sh.whatsappUrl)}">Consultar por WhatsApp</a></div></div>${sh.logoUrl ? `<div class="hero-art"><img src="${esc(imgUrl(sh.logoUrl))}" alt="${esc(sh.name)}"></div>` : ''}</section>
+ <section class="hero ${sh.logoUrl ? 'has-art' : ''} ${sh.heroBgUrl ? 'has-bg' : ''} ${sh.logoUrl && sh.heroArtMode === 'logo' ? 'art-logo' : ''} ${CFG.heroLayout === 'centered' ? 'centered' : ''}" id="inicio">${sh.heroBgUrl ? `<div class="hero-bg" data-par=".18" aria-hidden="true" style="background-image:url('${esc(imgUrl(sh.heroBgUrl))}')"></div>` : ''}<div class="hero-txt"><p class="h-brand">${esc(sh.name)}${CFG.tagline ? `<span class="h-tag">${esc(CFG.tagline)}</span>` : ''}</p><h1><span class="hd">${esc(sh.name)}</span><span class="hs">${esc(CFG.heroTitle || 'El estilo habla por vos.')}</span><span class="hu">${urbanTitle()}</span></h1><p class="h-about">${esc(sh.aboutText || 'Elegí tu servicio, tu barbero y reservá tu turno online.')}</p><p class="h-sub">${esc(CFG.heroSub || 'Cortes con carácter. Identidad propia. Cultura urbana.')}</p>
+ <div class="row"><button class="btn" data-a="go" data-t="reservar">Reservar turno</button><a class="btn wa" target="_blank" rel="noopener" href="${esc(sh.whatsappUrl)}">Consultar por WhatsApp</a></div>${sh.city ? `<p class="h-where">${esc(sh.city)} · ${esc(CFG.country || 'Uruguay')}</p>` : ''}</div>${sh.logoUrl ? `<div class="hero-art ${sh.heroArtMode === 'logo' ? 'logo' : ''}"><img src="${esc(imgUrl(sh.logoUrl))}" alt="${esc(sh.name)}"></div>` : ''}${stickersHTML()}</section>
+ ${marqHTML()}
+ ${philHTML(sh)}
  <section id="servicios"><h2>Servicios</h2>${S.services.length
-    ? `<ul class="svc">${S.services.map(s => `<li><span>${esc(s.name)}</span><span class="dots"></span><b>${money(s.price)}</b><small>${s.durationMinutes} min</small></li>`).join('')}</ul>`
+    ? `<div class="svc-grid">${S.services.map(s => `<article class="svc-card"><div><h3>${esc(s.name)}</h3>${s.description ? `<p>${esc(s.description)}</p>` : ''}</div><div class="svc-meta"><span>${s.durationMinutes} min</span><b>${money(s.price)}</b></div><button class="btn sm ghost" data-a="svcbook" data-id="${s.id}">Reservar</button></article>`).join('')}</div>`
     : '<div class="empty">Muy pronto vas a ver acá los servicios y precios.</div>'}</section>
- ${S.barbers.length ? `<section id="equipo"><h2>El equipo</h2><div class="opts">${S.barbers.map(b => `<div class="opt"><b>${esc(b.name)}</b>${b.specialties ? `<span>${esc(b.specialties)}</span>` : ''}${b.bio ? `<span>${esc(b.bio)}</span>` : ''}</div>`).join('')}</div></section>` : ''}
+ <section id="portfolio"><h2>Portfolio</h2><div class="row"><input id="q" type="search" placeholder="Buscar por nombre o etiqueta" aria-label="Buscar" style="max-width:280px" value="${esc(S.q)}"><button class="btn ghost" data-a="reset">Restablecer filtros</button></div><div id="chips" class="row" style="margin-top:10px"></div><div id="grid" class="grid"></div></section>
+ ${expHTML(sh)}
+ ${S.barbers.length ? `<section id="sobre-mi"><h2>${S.barbers.length === 1 ? 'Sobre mí' : 'El equipo'}</h2>${aboutStoryHTML()}<div class="opts">${S.barbers.map(b => `<div class="opt"><b>${esc(b.name)}</b>${b.specialties ? `<span>${esc(b.specialties)}</span>` : ''}${b.bio ? `<span>${esc(b.bio)}</span>` : ''}</div>`).join('')}</div></section>` : ''}
  ${S.items.length ? `<section id="encontrar"><h2>Encontrá tu corte</h2><div class="qz" id="qz"></div></section>` : ''}
+ ${marqHTML()}
  <section id="reservar"><h2>Reservá tu turno</h2><div id="book"></div></section>
- <section id="portfolio"><h2>Portfolio</h2><div class="row"><input id="q" type="search" placeholder="Buscar por nombre o etiqueta" aria-label="Buscar" style="max-width:280px" value="${esc(S.q)}"><button class="btn ghost" data-a="reset">Restablecer filtros</button></div><div id="chips" class="row" style="margin-top:10px"></div><div id="grid" class="grid"></div></section>`;
+ ${finaleHTML(sh)}`;
 }
 
 /* ---- reserva con calendario ---- */
@@ -329,13 +337,18 @@ const T = {
  <label>TikTok (enlace)<input name="tiktokUrl" placeholder="https://www.tiktok.com/@..." value="${esc(s.tiktokUrl || '')}"></label>
  <label>YouTube (enlace)<input name="youtubeUrl" placeholder="https://www.youtube.com/@..." value="${esc(s.youtubeUrl || '')}"></label>
  <label style="grid-column:1/-1">Nota de horarios (ej: Atención con reserva previa)<input name="hoursNote" value="${esc(s.hoursNote || '')}"></label>
+ <label style="grid-column:1/-1">La imagen de portada se muestra como<select name="heroArtMode"><option value="photo" ${s.heroArtMode !== 'logo' ? 'selected' : ''}>Foto (en blanco y negro, con marco)</option><option value="logo" ${s.heroArtMode === 'logo' ? 'selected' : ''}>Logo (tal cual, sin marco; mejor un PNG con fondo transparente)</option></select></label>
  <p class="mu" style="grid-column:1/-1"><small>Las redes sin enlace no se muestran. Los días y horarios del footer se calculan solos con el horario de tus barberos.</small></p>
  <label style="grid-column:1/-1;font-weight:400"><input type="checkbox" name="autoConfirm" ${s.autoConfirm ? 'checked' : ''} style="width:auto"> Confirmar automáticamente las reservas (si no, quedan pendientes hasta que las confirmes)</label>
  <div><button class="btn">Guardar ajustes</button></div></form><small class="err" id="e-f"></small>
  <h2 style="font-size:1.4rem;margin-top:28px">Imagen de portada (opcional)</h2>
  <p class="mu">Se muestra a la derecha de tu nombre en la portada: tu logo, la foto del barbero o lo que prefieras. Si no subís nada, la portada queda solo con el texto. Recomendado: imagen cuadrada.</p>
  ${s.logoUrl ? `<img class="thumb" src="${esc(imgUrl(s.logoUrl))}" alt="Imagen de portada actual">` : '<p class="mu">Todavía no hay imagen.</p>'}
- <form data-f="logo" class="row"><input type="file" name="file" accept="image/jpeg,image/png,image/webp" aria-label="Imagen de portada" style="max-width:320px"><button class="btn">Subir imagen</button>${s.logoUrl ? '<button type="button" class="btn ghost" data-a="logodel">Quitar imagen</button>' : ''}</form><small class="err" id="e-logo"></small>`;
+ <form data-f="logo" class="row"><input type="file" name="file" accept="image/jpeg,image/png,image/webp" aria-label="Imagen de portada" style="max-width:320px"><button class="btn">Subir imagen</button>${s.logoUrl ? '<button type="button" class="btn ghost" data-a="logodel">Quitar imagen</button>' : ''}</form><small class="err" id="e-logo"></small>
+ <h2 style="font-size:1.4rem;margin-top:28px">Fondo de portada (opcional)</h2>
+ <p class="mu">Una foto de ambiente (el sillón, la navaja, el local) que queda <b>detrás</b> de tu imagen. Se oscurece sola para que el texto se lea bien. Recomendado: horizontal, de 1600 px de ancho o más, y de menos de 500 KB.</p>
+ ${s.heroBgUrl ? `<img class="thumb" src="${esc(imgUrl(s.heroBgUrl))}" alt="Fondo de portada actual">` : '<p class="mu">Todavía no hay fondo.</p>'}
+ <form data-f="bg" class="row"><input type="file" name="file" accept="image/jpeg,image/png,image/webp" aria-label="Fondo de portada" style="max-width:320px"><button class="btn">Subir fondo</button>${s.heroBgUrl ? '<button type="button" class="btn ghost" data-a="bgdel">Quitar fondo</button>' : ''}</form><small class="err" id="e-bg"></small>`;
   }
 };
 
@@ -451,8 +464,8 @@ const done = (msg) => { dclose(); if (msg) toast(msg); loadPanel(); };
 const A = {
   close: dclose, yes() { dclose(); if (pending) pending(); pending = null; },
   reload: loadPublic,
-  theme(d, b) { const r = document.documentElement, cur = r.dataset.theme || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light'), n = TO[(TO.indexOf(cur) + 1) % 3]; r.dataset.theme = n; try { localStorage.setItem('theme', n); } catch (e) { /* ok */ } b.textContent = 'Tema: ' + TN[n]; },
-  go(d) { const el = document.getElementById(d.t); if (el) el.scrollIntoView({ behavior: 'smooth' }); },
+  theme(d, b) { const r = document.documentElement, cur = r.dataset.theme || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light'), n = TO[(TO.indexOf(cur) + 1) % TO.length]; r.dataset.theme = n; try { localStorage.setItem('theme', n); } catch (e) { /* ok */ } b.textContent = 'Tema: ' + TN[n]; },
+  go(d) { const h = document.querySelector('header.bar'); if (h) h.classList.remove('open'); const el = document.getElementById(d.t); if (el) el.scrollIntoView({ behavior: 'smooth' }); },
   // reserva pública
   svc(d) { B.svc = +d.id; B.barber = null; B.day = null; B.slots = []; B.slot = null; loadDays(); },
   brb(d) { B.barber = +d.id || null; B.day = null; B.slots = []; B.slot = null; loadDays(); },
@@ -465,7 +478,7 @@ const A = {
   // portfolio público
   cat(d) { S.cat = d.v; S.sty = ''; drawGallery(); }, sty(d) { S.sty = d.v; drawGallery(); },
   reset() { S.cat = ''; S.sty = ''; S.q = ''; const q = $('#q'); if (q) q.value = ''; drawGallery(); },
-  open(d) { openItem(+d.id); }, pic(d) { const m = $('#mainpic'); if (m) m.src = d.src; },
+  open(d) { openItem(+d.id); }, pic(d) { const m = $('#mainpic'); if (!m) return; m.style.opacity = 0; setTimeout(() => { m.src = d.src; m.style.opacity = 1; }, 170); },
   nav(d) { const l = S.list.length ? S.list : S.items, k = l.findIndex(i => i.id == d.id); openItem(l[(k + Number(d.d) + l.length) % l.length].id); },
   ref(d) { S.ref = S.items.find(i => i.id == d.id); dclose(); renderBook(); toast('Elegí servicio, día y hora: tu corte de referencia va incluido.'); const el = $('#reservar'); if (el) el.scrollIntoView({ behavior: 'smooth' }); },
   // panel
@@ -583,7 +596,7 @@ const F = {
   async settings(f) {
     const d = fv(f), n = k => Number(d[k]);
     const body = { name: d.name, aboutText: d.aboutText || null, whatsapp: d.whatsapp, address: d.address || null, timezone: d.timezone, slotMinutes: n('slotMinutes'), bufferMinutes: n('bufferMinutes'), autoConfirm: !!d.autoConfirm, maxDaysAhead: n('maxDaysAhead'), minNoticeMinutes: n('minNoticeMinutes'),
-      neighborhood: d.neighborhood || null, city: d.city || null, mapsUrl: d.mapsUrl || null, instagramUrl: d.instagramUrl || null, tiktokUrl: d.tiktokUrl || null, youtubeUrl: d.youtubeUrl || null, hoursNote: d.hoursNote || null };
+      neighborhood: d.neighborhood || null, city: d.city || null, mapsUrl: d.mapsUrl || null, instagramUrl: d.instagramUrl || null, tiktokUrl: d.tiktokUrl || null, youtubeUrl: d.youtubeUrl || null, hoursNote: d.hoursNote || null, heroArtMode: d.heroArtMode || 'photo' };
     try { await api('/api/settings', { method: 'PUT', body }); err(''); toast('Ajustes guardados.'); loadPublic(); } catch (e) { err(e.message); }
   }
 };
@@ -698,18 +711,33 @@ function waLink(phone, text) { return 'https://wa.me/' + String(phone).replace('
 function first(name) { return String(name || '').trim().split(/\s+/)[0]; }
 function bday(d) { const [y, m, dd] = String(d).split('-'); return `${dd}/${m}/${y}`; }
 
-function reveal() {   // las secciones aparecen suavemente al hacer scroll
-  const els = [...document.querySelectorAll('main > section')];
+function reveal() {   // secciones y elementos aparecen de a poco al hacer scroll
   if (!('IntersectionObserver' in window)) return;
-  els.forEach(el => el.classList.add('rv'));
-  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0.06 });
-  els.forEach(el => io.observe(el));
-  setTimeout(() => els.forEach(el => el.classList.add('in')), 3000);   // por si el observador no llega a disparar
+  const secs = [...document.querySelectorAll('main > section')];
+  const items = [...document.querySelectorAll('#app .svc-card, #app #grid > *, #app .exp-list li, #app #sobre-mi .opt, #app .site-foot .fgrid > div')];
+  secs.forEach(el => el.classList.add('rv'));
+  items.forEach(el => { el.classList.add('rv-item'); el.style.setProperty('--d', ([...el.parentElement.children].indexOf(el) % 6) * 90 + 'ms'); });
+  const all = [...secs, ...items];
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0.05, rootMargin: '0px 0px -6% 0px' });
+  all.forEach(el => io.observe(el));
+  // solo si el observador no funciona (ninguna seccion llego a mostrarse), se muestra todo
+  setTimeout(() => { if (!document.querySelector('main > section.in')) all.forEach(el => el.classList.add('in')); }, 1800);
+  navSpy();
+}
+
+function philHTML(sh) {
+  return `<section id="filosofia" class="phil"><span class="gl" aria-hidden="true"></span><h2 class="sr">Filosofía</h2><p class="phil-q">${esc(CFG.heroTitle || 'El estilo habla por vos.')}</p><p class="phil-s">${esc(CFG.philosophy || 'Cada corte tiene su técnica. Cada detalle, su intención.')}</p>${sh.aboutText ? `<p class="phil-a">${esc(sh.aboutText)}</p>` : ''}<span class="gl" aria-hidden="true"></span></section>`;
+}
+
+function expHTML(sh) {
+  const bg = CFG.experienceImage || sh.heroBgUrl, words = CFG.pillars || [];
+  return `<section id="experiencia" class="exp">${bg ? `<div class="exp-bg" data-par=".12" aria-hidden="true" style="background-image:url('${esc(imgUrl(bg))}')"></div>` : ''}<h2 class="sr">La experiencia</h2><ul class="exp-list">${words.map(w => `<li>${esc(w)}</li>`).join('')}</ul></section>`;
 }
 
 Object.assign(A, {
   pgo(d) { P.date = d.d; loadPanel(); window.scrollTo({ top: 0, behavior: 'smooth' }); },
   cedit(d) { cform(d.id); },
+  svcbook(d) { A.svc({ id: d.id }); const el = $('#reservar'); if (el) el.scrollIntoView({ behavior: 'smooth' }); },
   async ifeat(d) { try { const r = await api(`/api/portfolio/${d.id}/feature`, { method: 'POST' }); toast(r.featured ? 'Marcado como destacado.' : 'Ya no es destacado.'); loadPanel(); } catch (e) { toast(e.message, 1); } },
   cpromo(d) { cpromo(d.id); },
   ptpl(d) { const t = P.tpls[d.i][1]; $('#pmsg').value = t; $('#pwa').href = waLink(P.promoPhone, t); },
@@ -743,6 +771,84 @@ document.addEventListener('pointermove', e => {   // la imagen de portada se inc
   if (e.clientY < r.top - 80 || e.clientY > r.bottom + 80) return;
   const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5, img = art.querySelector('img');
   if (img) { img.style.setProperty('--ry', (x * 14) + 'deg'); img.style.setProperty('--rx', (-y * 14) + 'deg'); }
+});
+
+Object.assign(A, {
+  bgdel() {
+    ask('¿Quitar el fondo de portada?', async () => { try { await api('/api/settings/background', { method: 'DELETE' }); toast('Fondo quitado.'); loadPanel(); } catch (e) { toast(e.message, 1); } }, 'Quitar');
+  }
+});
+Object.assign(F, {
+  async bg(f) {
+    const file = f.file.files[0], e = $('#e-bg'); e.textContent = '';
+    if (!file) { e.textContent = 'Elegí una imagen.'; return; }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { e.textContent = 'Formato no permitido. Usá JPG, PNG o WebP.'; return; }
+    if (file.size > 5 * 1024 * 1024) { e.textContent = 'La imagen supera los 5 MB.'; return; }
+    const form = new FormData(); form.append('file', file);
+    try { await api('/api/settings/background', { method: 'POST', form }); toast('Fondo de portada guardado.'); loadPanel(); } catch (x) { e.textContent = x.message; }
+  }
+});
+document.addEventListener('pointermove', e => {   // el fondo se desplaza apenas al revés que el cursor: da sensación de profundidad
+  const bg = document.querySelector('.hero-bg'); if (!bg) return;
+  const r = bg.parentElement.getBoundingClientRect();
+  if (e.clientY < r.top - 60 || e.clientY > r.bottom + 60) return;
+  bg.style.setProperty('--px', ((e.clientX - r.left) / r.width - 0.5).toFixed(3));
+  bg.style.setProperty('--py', ((e.clientY - r.top) / r.height - 0.5).toFixed(3));
+});
+
+/* ============ Tema Skate: elementos graficos, parallax y navegacion ============ */
+function urbanTitle() {   // "NO ES SOLO UN CORTE." + "ES TU ESTILO." (la segunda parte en contorno)
+  const parts = String(CFG.heroTitleUrban || 'No es solo un corte. Es tu estilo.').split(/(?<=\.)\s+/);
+  return `${esc(parts[0])}${parts.length > 1 ? ` <em>${esc(parts.slice(1).join(' '))}</em>` : ''}`;
+}
+function stickersHTML() {   // stickers originales de IKONOSTUDIO (solo se ven en el tema Skate)
+  return `<div class="stk stk-a" data-par="-.3" aria-hidden="true"><svg viewBox="0 0 120 120"><defs><path id="cp" d="M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0"/></defs><circle cx="60" cy="60" r="58" style="fill:var(--acc)"/><circle cx="60" cy="60" r="52" fill="none" style="stroke:var(--on)" stroke-width="1.5" stroke-dasharray="3 3"/><text font-size="12" letter-spacing="3.2" style="fill:var(--on)" font-family="Anton,Impact,sans-serif"><textPath href="#cp">IKONOSTUDIO · BARBER · MONTEVIDEO ·</textPath></text><text x="60" y="73" text-anchor="middle" font-size="34" style="fill:var(--on)" font-family="Anton,Impact,sans-serif">MVD</text></svg></div><div class="stk stk-b" data-par=".25" aria-hidden="true">Cortes · Actitud</div>`;
+}
+function marqHTML() {
+  const t = `${esc(CFG.brandName || 'IKONOSTUDIO')} ✕ SKATE ✕ BARBER ✕ MONTEVIDEO ✕ `.repeat(4);
+  return `<div class="marq" aria-hidden="true"><div class="marq-in"><span>${t}</span><span>${t}</span></div></div>`;
+}
+function aboutStoryHTML() {
+  return CFG.aboutStory ? `<p class="about-story">${esc(CFG.aboutStory)}</p><ul class="about-tags">${(CFG.aboutTags || []).map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : '';
+}
+function finaleHTML(sh) {
+  const lines = String(CFG.finalPhrase || 'Tu estilo. Tu identidad. Tu corte.').split(/(?<=\.)\s+/).map(l => `<span>${esc(l)}</span>`).join('');
+  return `<section id="cierre" class="finale${CFG.finaleImage ? ' has-photo' : ''}"${CFG.finaleImage ? ` style="--fin-img:url('${esc(CFG.finaleImage)}')"` : ''}><h2 class="sr">Reservá tu turno</h2>${CFG.monogramUrl ? `<img class="fin-mark" src="${esc(CFG.monogramUrl)}" alt="">` : ''}<p class="fin-brand">${esc(CFG.brandName || sh.name)}</p><p class="fin-q">${lines}</p><button class="btn fin-btn" data-a="go" data-t="reservar">Reservar turno</button></section>`;
+}
+function fabBar() {   // acceso fijo a Reservar y WhatsApp desde cualquier seccion (tema Skate)
+  return `<div class="fab-bar"><button class="fab-r btn" data-a="go" data-t="reservar">Reservar</button><a class="fab-wa" target="_blank" rel="noopener" href="${esc(S.shop.whatsappUrl)}" aria-label="Escribir por WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15.1L2 22l5-1.3A10 10 0 1012 2zm0 18.2a8.2 8.2 0 01-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1112 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 01-3.3-2.9c-.2-.4.2-.4.7-1.3a.5.5 0 000-.5c-.1-.1-.6-1.4-.8-1.9s-.4-.4-.6-.4h-.5a1 1 0 00-.7.3 3 3 0 00-.9 2.2 5.2 5.2 0 001.1 2.8 11.9 11.9 0 004.5 4c2.2.9 2.2.6 2.6.6a2.2 2.2 0 001.5-1.1 1.9 1.9 0 00.1-1.1c0-.1-.2-.2-.5-.3z"/></svg></a></div>`;
+}
+let navIO;
+function navSpy() {   // resalta en el menu la seccion que se esta viendo
+  if (!('IntersectionObserver' in window)) return;
+  if (navIO) navIO.disconnect();
+  navIO = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    document.querySelectorAll('header.bar nav [data-t]').forEach(b => { if (b.dataset.t === e.target.id) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); });
+  }), { rootMargin: '-45% 0px -50% 0px' });
+  document.querySelectorAll('main > section[id]').forEach(el => navIO.observe(el));
+}
+(function parallax() {   // desplazamiento sutil de fondos y stickers (solo transform; mas suave en celulares)
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let tick = false;
+  addEventListener('scroll', () => {
+    if (tick) return; tick = true;
+    requestAnimationFrame(() => {
+      tick = false;
+      const vh = innerHeight, k = innerWidth < 760 ? 0.5 : 1;
+      document.querySelectorAll('.cw .pic, .cw .ph').forEach(el => {   // las fotos se deslizan dentro de su marco al hacer scroll
+        const r = el.parentElement.getBoundingClientRect(); if (r.bottom < -60 || r.top > vh + 60) return;
+        el.style.setProperty('--pp', Math.max(-1, Math.min(1, (r.top + r.height / 2 - vh / 2) / (vh / 2))).toFixed(3));
+      });
+      document.querySelectorAll('[data-par]').forEach(el => {
+        const r = el.getBoundingClientRect(); if (r.bottom < -120 || r.top > vh + 120) return;
+        el.style.setProperty('--py2', ((r.top + r.height / 2 - vh / 2) * parseFloat(el.dataset.par) * -1 * k).toFixed(1) + 'px');
+      });
+    });
+  }, { passive: true });
+})();
+Object.assign(A, {
+  menu() { const h = document.querySelector('header.bar'); const open = h.classList.toggle('open'); const b = h.querySelector('.menu-btn'); if (b) { b.setAttribute('aria-expanded', open); b.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú'); } }
 });
 
 loadPublic();

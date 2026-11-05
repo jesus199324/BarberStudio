@@ -266,6 +266,20 @@ class ApiFlowIntegrationTest {
             .andExpect(jsonPath("$.openingHours[0].open").value("10:00")).andExpect(jsonPath("$.openingHours[0].close").value("18:00"));
     }
 
+    @Test
+    void heroBackgroundAndArtModeAreStoredAndShownPublicly() throws Exception {
+        byte[] png = {(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0};
+        mvc.perform(multipart("/api/settings/background").file(new MockMultipartFile("file", "fondo.png", "image/png", png)).cookie(owner))
+            .andExpect(status().isOk());
+        mvc.perform(get("/api/public/shop-a/shop")).andExpect(jsonPath("$.heroBgUrl").isNotEmpty())
+            .andExpect(jsonPath("$.heroArtMode").value("photo"));
+        String base = "\"name\":\"Mi Barberia\",\"whatsapp\":\"099 111 222\",\"timezone\":\"America/Montevideo\",\"slotMinutes\":15,\"bufferMinutes\":0,\"maxDaysAhead\":60,\"minNoticeMinutes\":60";
+        mvc.perform(put("/api/settings").cookie(owner).contentType(JSON).content("{" + base + ",\"heroArtMode\":\"logo\"}")).andExpect(status().isOk());
+        mvc.perform(get("/api/public/shop-a/shop")).andExpect(jsonPath("$.heroArtMode").value("logo"));
+        mvc.perform(delete("/api/settings/background").cookie(owner)).andExpect(status().isOk());
+        mvc.perform(get("/api/public/shop-a/shop")).andExpect(jsonPath("$.heroBgUrl").doesNotExist());
+    }
+
     // ---------- helpers ----------
     private LocalDate workDay() { return LocalDate.now(ZONE).plusDays(7); }
 

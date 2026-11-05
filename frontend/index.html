@@ -8,11 +8,12 @@
 <meta name="theme-color" content="#101010">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="app.css">
 <script>
   /* Sin parpadeos: se decide antes de pintar si corresponde mostrar la introduccion */
   (function () { var r = document.documentElement;
+    try { var th = localStorage.getItem('theme'); if (th === 'shelby' || th === 'skate') r.setAttribute('data-theme', th); } catch (e) { /* ok */ }
     try { if (sessionStorage.getItem('intro') || matchMedia('(prefers-reduced-motion: reduce)').matches || location.hash.indexOf('panel') > -1) r.classList.add('no-intro'); else r.classList.add('intro-on'); }
     catch (e) { r.classList.add('intro-on'); } })();
 </script>
