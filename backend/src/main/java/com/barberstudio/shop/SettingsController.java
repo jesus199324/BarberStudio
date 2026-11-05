@@ -48,18 +48,19 @@ public class SettingsController {
         @Size(max = 120) String neighborhood,
         @Size(max = 120) String city,
         @Size(max = 500) @Pattern(regexp = URL_RX, message = URL_MSG) String mapsUrl,
-        @Size(max = 300) String hoursNote) {}
+        @Size(max = 300) String hoursNote,
+        @Pattern(regexp = "photo|logo", message = "Modo de imagen inválido") String heroArtMode) {}
 
     public record SettingsResponse(String name, String slug, String aboutText, String whatsapp, String address,
                                    String timezone, String currency, int slotMinutes, int bufferMinutes,
                                    boolean autoConfirm, int maxDaysAhead, int minNoticeMinutes, String logoUrl,
                                    String instagramUrl, String tiktokUrl, String youtubeUrl, String neighborhood,
-                                   String city, String mapsUrl, String hoursNote) {
+                                   String city, String mapsUrl, String hoursNote, String heroBgUrl, String heroArtMode) {
         static SettingsResponse from(Barbershop b) {
             return new SettingsResponse(b.getName(), b.getSlug(), b.getAboutText(), b.getWhatsappE164(), b.getAddress(),
                 b.getTimezone(), b.getCurrency(), b.getSlotMinutes(), b.getBufferMinutes(), b.isAutoConfirm(),
                 b.getMaxDaysAhead(), b.getMinNoticeMinutes(), b.getLogoUrl(),
-                b.getInstagramUrl(), b.getTiktokUrl(), b.getYoutubeUrl(), b.getNeighborhood(), b.getCity(), b.getMapsUrl(), b.getHoursNote());
+                b.getInstagramUrl(), b.getTiktokUrl(), b.getYoutubeUrl(), b.getNeighborhood(), b.getCity(), b.getMapsUrl(), b.getHoursNote(), b.getHeroBgUrl(), b.getHeroArtMode());
         }
     }
 
@@ -90,6 +91,7 @@ public class SettingsController {
         b.setCity(nz(r.city()));
         b.setMapsUrl(nz(r.mapsUrl()));
         b.setHoursNote(nz(r.hoursNote()));
+        if (r.heroArtMode() != null) b.setHeroArtMode(r.heroArtMode());
         return SettingsResponse.from(shops.save(b));
     }
 
@@ -119,6 +121,36 @@ public class SettingsController {
         String old = b.getLogoKey();
         b.setLogoUrl(null);
         b.setLogoKey(null);
+        shops.saveAndFlush(b);
+        if (old != null) storage.delete(old);
+        return SettingsResponse.from(b);
+    }
+
+    /** Fondo de la portada (foto de ambiente que queda detras de la imagen principal). */
+    @PostMapping(value = "/background", consumes = "multipart/form-data")
+    @PreAuthorize("hasRole('OWNER')")
+    @Transactional
+    public SettingsResponse uploadBackground(@RequestPart("file") MultipartFile file) {
+        Barbershop b = find();
+        byte[] bytes;
+        try { bytes = file.getBytes(); } catch (IOException e) { throw new UncheckedIOException(e); }
+        var stored = storage.store(b.getId(), bytes, ImageValidator.extensionFor(bytes));
+        String old = b.getHeroBgKey();
+        b.setHeroBgUrl(stored.url());
+        b.setHeroBgKey(stored.key());
+        shops.saveAndFlush(b);
+        if (old != null) storage.delete(old);
+        return SettingsResponse.from(b);
+    }
+
+    @DeleteMapping("/background")
+    @PreAuthorize("hasRole('OWNER')")
+    @Transactional
+    public SettingsResponse deleteBackground() {
+        Barbershop b = find();
+        String old = b.getHeroBgKey();
+        b.setHeroBgUrl(null);
+        b.setHeroBgKey(null);
         shops.saveAndFlush(b);
         if (old != null) storage.delete(old);
         return SettingsResponse.from(b);

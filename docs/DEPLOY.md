@@ -35,7 +35,12 @@ No uses la base PostgreSQL gratuita de Render: expira (30 días según su docume
 El identificador del sitio (`slug`) queda `jesuss-sk8`; es el que usa `frontend/config.js`.
 Al primer arranque se crean tu barbería, tu usuario y tu barbero. **No hay horarios ni servicios cargados**: entrá al panel (`/#/panel`) y cargá Servicios, el Horario del barbero y los Ajustes. Hasta que cargues horarios, nadie puede reservar.
 
+## Fotos del portfolio: Cloudinary (gratis)
+1. Creá una cuenta en cloudinary.com y, en el panel, copiá *Cloud name*, *API Key* y *API Secret*.
+2. En Render, entrá a *Environment* y agregá: `STORAGE_PROVIDER=cloudinary`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`.
+3. Render redespliega solo. Desde ahí las fotos que subas desde el panel se guardan en Cloudinary y no se pierden.
+El secreto nunca llega al navegador: el backend firma cada subida. Si falta alguna variable, la app no arranca y lo dice en los logs.
+
 ## Qué falta
-- Cloudinary para guardar las fotos del portfolio (hoy van al disco de Render, que se borra al reiniciar).
 - Fichas completas de clientes, fidelización, promociones, mensajes (cola de WhatsApp lista para enviar con un toque), reseñas y footer configurable: etapas 2 a 5.
 - Verificar con el CI de GitHub (pestaña *Actions*) que el backend compila y pasa las pruebas: yo no pude ejecutarlo.

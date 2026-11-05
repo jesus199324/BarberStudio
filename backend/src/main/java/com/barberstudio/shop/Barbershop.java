@@ -33,4 +33,7 @@ public class Barbershop extends BaseEntity {
     @Column(name = "city") private String city;
     @Column(name = "maps_url") private String mapsUrl;
     @Column(name = "hours_note") private String hoursNote;
+    @Column(name = "hero_bg_url") private String heroBgUrl;
+    @Column(name = "hero_bg_key") private String heroBgKey;
+    @Column(name = "hero_art_mode") private String heroArtMode = "photo";
 }
