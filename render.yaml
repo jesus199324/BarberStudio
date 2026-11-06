@@ -32,3 +32,11 @@ services:
         sync: false
       - key: BOOTSTRAP_OWNER_PASSWORD
         sync: false
+      - key: RESEND_API_KEY         # aviso por email de nuevas reservas (resend.com, plan gratuito)
+        sync: false
+      - key: NOTIFY_EMAIL_TO        # a que email te llega el aviso
+        sync: false
+      - key: NOTIFY_EMAIL_FROM      # opcional; por defecto IKONOSTUDIO <onboarding@resend.dev>
+        sync: false
+      - key: NOTIFY_PANEL_URL       # opcional; enlace al panel que va dentro del email
+        sync: false
