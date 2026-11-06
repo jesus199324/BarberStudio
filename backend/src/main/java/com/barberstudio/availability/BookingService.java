@@ -15,6 +15,7 @@ import com.barberstudio.common.error.ConflictException;
 import com.barberstudio.common.error.NotFoundException;
 import com.barberstudio.common.util.Phone;
 import com.barberstudio.common.util.WhatsAppLinks;
+import com.barberstudio.notification.BookingNotifier;
 import com.barberstudio.portfolio.PortfolioItemRepository;
 import com.barberstudio.portfolio.PortfolioStatus;
 import com.barberstudio.shop.Barbershop;
@@ -48,6 +49,7 @@ public class BookingService {
     private final AppointmentRepository appointments;
     private final PortfolioItemRepository portfolio;
     private final PlatformTransactionManager tm;
+    private final BookingNotifier notifier;
 
     public record BookingRequest(
         @NotNull(message = "Elegí un servicio") Long serviceId,
@@ -92,11 +94,14 @@ public class BookingService {
 
         for (Long barberId : slot.barberIds()) {   // con "cualquier barbero" se prueba en orden de menor carga
             try {
-                return inNewTx(() -> {
+                AppointmentResponse created = inNewTx(() -> {
                     Appointment a = appointmentService.createForShop(shop.getId(), client.getId(), svc.getId(), barberId,
                         r.startAt(), null, null, status, notes);
-                    return response(shop, zone, AppointmentResponse.from(a));
+                    return AppointmentResponse.from(a);
                 });
+                // La reserva ya esta guardada (transaccion confirmada). El aviso al dueño corre aparte y nunca falla hacia aca.
+                notifier.newBooking(shop, created, phone, r.notes() == null || r.notes().isBlank() ? null : r.notes().trim());
+                return response(shop, zone, created);
             } catch (ConflictException | DataIntegrityViolationException e) {
                 // otro cliente tomo ese intervalo justo ahora: se intenta con el siguiente barbero
             }
