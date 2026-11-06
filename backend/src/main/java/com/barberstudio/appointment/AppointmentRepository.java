@@ -11,6 +11,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
+    /** Hay turnos (pasados o futuros) hechos con este servicio. */
+    boolean existsByServiceId(Long serviceId);
+
 
     @Query("select a from Appointment a join fetch a.client join fetch a.service join fetch a.barber "
          + "where a.barbershopId = :shop and a.startAt >= :from and a.startAt < :to order by a.startAt")

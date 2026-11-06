@@ -1,7 +1,9 @@
 package com.barberstudio.catalog;
 
+import com.barberstudio.appointment.AppointmentRepository;
 import com.barberstudio.barber.BarberRepository;
 import com.barberstudio.common.error.BusinessRuleException;
+import com.barberstudio.common.error.ConflictException;
 import com.barberstudio.common.error.NotFoundException;
 import com.barberstudio.common.security.CurrentUser;
 import com.barberstudio.common.util.Slugs;
@@ -19,6 +21,7 @@ public class CatalogService {
     private final BarberServiceRepository services;
     private final HaircutStyleRepository styles;
     private final BarberRepository barbers;
+    private final AppointmentRepository appointments;
 
     public record ServiceRequest(
         @NotBlank(message = "El nombre es obligatorio") @Size(max = 120) String name,
@@ -69,6 +72,20 @@ public class CatalogService {
             .orElseThrow(() -> new NotFoundException("Servicio no encontrado."));
         apply(s, r);
         return ServiceResponse.from(services.saveAndFlush(s));
+    }
+
+    /** Borra un servicio solo si nunca se uso en un turno; si tiene historial hay que ocultarlo (desactivarlo). */
+    @Transactional
+    public void deleteService(Long id) {
+        BarberService s = services.findByIdAndBarbershopId(id, CurrentUser.shopId())
+            .orElseThrow(() -> new NotFoundException("Servicio no encontrado."));
+        if (appointments.existsByServiceId(id)) {
+            throw new ConflictException("Este servicio ya tiene turnos en el historial, por eso no se puede borrar. Ocultalo para que no se muestre en el sitio.");
+        }
+        barbers.findByBarbershopIdOrderBySortOrderAscNameAsc(s.getBarbershopId()).forEach(b -> b.getServiceIds().remove(id));
+        services.flush();
+        services.delete(s);
+        services.flush();
     }
 
     private void apply(BarberService s, ServiceRequest r) {

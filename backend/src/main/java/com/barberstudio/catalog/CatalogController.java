@@ -27,6 +27,10 @@ public class CatalogController {
         return catalog.updateService(id, r);
     }
 
+    @DeleteMapping("/services/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteService(@PathVariable Long id) { catalog.deleteService(id); }
+
     @GetMapping("/styles")
     public List<StyleResponse> styles(@RequestParam(defaultValue = "false") boolean activeOnly) {
         return catalog.listStyles(activeOnly);

@@ -304,6 +304,24 @@ class ApiFlowIntegrationTest {
     }
 
     @Test
+    void unusedServiceCanBeHiddenEditedAndDeletedButOneWithHistoryCannotBeDeleted() throws Exception {
+        long extra = id(postJson("/api/services", "{\"name\":\"Cera\",\"price\":100,\"durationMinutes\":15,\"active\":true}"));
+        mvc.perform(get("/api/public/shop-a/shop")).andExpect(jsonPath("$.services[?(@.id==" + extra + ")]").isNotEmpty());
+        mvc.perform(put("/api/services/" + extra).cookie(owner).contentType(JSON)
+            .content("{\"name\":\"Cera\",\"price\":120,\"durationMinutes\":15,\"active\":false}")).andExpect(status().isOk());
+        mvc.perform(get("/api/public/shop-a/shop")).andExpect(jsonPath("$.services[?(@.id==" + extra + ")]").isEmpty());
+        mvc.perform(delete("/api/services/" + extra).cookie(owner)).andExpect(status().isNoContent());
+        mvc.perform(get("/api/services").cookie(owner)).andExpect(jsonPath("$[?(@.id==" + extra + ")]").isEmpty());
+        mvc.perform(delete("/api/services/" + extra).cookie(owner)).andExpect(status().isNotFound());
+        // con historial no se puede borrar
+        LocalDate d = workDay();
+        setHours(barberId, d, "10:00", "13:00");
+        mvc.perform(post("/api/appointments").cookie(owner).contentType(JSON).content(appointmentBody(at(d, 10, 0))))
+            .andExpect(status().is2xxSuccessful());
+        mvc.perform(delete("/api/services/" + serviceId).cookie(owner)).andExpect(status().isConflict());
+    }
+
+    @Test
     void openingHoursAreDerivedFromBarberSchedules() throws Exception {
         LocalDate d = workDay();
         setHours(barberId, d, "10:00", "18:00");

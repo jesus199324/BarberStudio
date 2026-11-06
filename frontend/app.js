@@ -309,8 +309,8 @@ const T = {
   async servicios() {
     const sv = await api('/api/services'); P.services = sv;
     return `<div class="row" style="margin-bottom:12px"><button class="btn" data-a="snew">Nuevo servicio</button></div>${sv.length
-      ? `<ul class="list">${sv.map(s => `<li><div class="gr"><b>${esc(s.name)}</b> ${s.active ? '' : '<span class="bd">Inactivo</span>'}<br><span class="mu">${money(s.price)}, ${s.durationMinutes} min${s.description ? '. ' + esc(s.description) : ''}</span></div><button class="btn sm ghost" data-a="sedit" data-id="${s.id}">Editar</button></li>`).join('')}</ul>`
-      : '<div class="empty">Cargá tu primer servicio para poder recibir reservas.</div>'}<p class="mu"><small>Los servicios no se borran: se desactivan para conservar el historial. Los turnos ya reservados mantienen el precio y la duración con que se hicieron.</small></p>`;
+      ? `<ul class="list">${sv.map(s => `<li><div class="gr"><b>${esc(s.name)}</b> <span class="bd ${s.active ? 'on' : ''}">${s.active ? 'Visible en el sitio' : 'Oculto'}</span><br><span class="mu">${money(s.price)}, ${s.durationMinutes} min${s.description ? '. ' + esc(s.description) : ''}</span></div><div class="acts"><button class="btn sm ghost" data-a="stoggle" data-id="${s.id}">${s.active ? 'Ocultar' : 'Mostrar'}</button><button class="btn sm ghost" data-a="sedit" data-id="${s.id}">Editar</button><button class="btn sm ghost" data-a="sdel" data-id="${s.id}">Borrar</button></div></li>`).join('')}</ul>`
+      : '<div class="empty">Cargá tu primer servicio para poder recibir reservas.</div>'}<p class="mu"><small>"Ocultar" saca el servicio del sitio y de las reservas sin perderlo: lo volvés a mostrar cuando quieras. "Borrar" lo elimina del todo, pero solo si nunca se usó en un turno; si ya tiene historial, ocultalo. Los turnos ya reservados mantienen el precio y la duración con que se hicieron.</small></p>`;
   },
 
   async clientes() {
@@ -429,7 +429,7 @@ function sform(id) {
   dopen(`<h2>${id ? 'Editar' : 'Nuevo'} servicio</h2><form data-f="service" class="stack" novalidate><input type="hidden" name="id" value="${id || ''}">
  <label>Nombre<input name="name" value="${esc(s.name || '')}" maxlength="120"></label><label>Descripción<input name="description" value="${esc(s.description || '')}"></label>
  <label>Precio<input type="number" name="price" min="0" step="1" value="${s.price ?? ''}"></label><label>Duración (minutos)<input type="number" name="duration" min="5" max="480" step="5" value="${s.durationMinutes}"></label>
- <label style="font-weight:400"><input type="checkbox" name="active" ${s.active ? 'checked' : ''} style="width:auto"> Activo (se puede reservar)</label>${btns('Guardar')}</form>`);
+ <label style="font-weight:400"><input type="checkbox" name="active" ${s.active ? 'checked' : ''} style="width:auto"> Mostrar en el sitio (se puede reservar)</label>${btns('Guardar')}</form>`);
 }
 
 function cform(id) {
@@ -456,6 +456,12 @@ function cpromo(id) {
  <div class="row" style="margin-top:12px"><a id="pwa" class="btn wa" target="_blank" rel="noopener" href="${esc(waLink(c.whatsapp, P.tpls[0][1]))}">Abrir WhatsApp</a><button type="button" class="btn ghost" data-a="close">Cerrar</button></div>`);
 }
 
+/* Fotos de una publicacion dentro del formulario de edicion: quitar y elegir portada */
+function pthumbs(it) {
+  return `<p class="mu pt-hint"><small>Tocá ✕ para quitar una foto o "Portada" para elegir la que se ve en la grilla.</small></p><div class="thumbs pth">${it.images.map(m => `<span class="pt ${m.cover ? 'cov' : ''}"><img src="${esc(imgUrl(m.url))}" alt="${esc(m.altText)}"><button type="button" class="pt-x" data-a="pimgdel" data-id="${it.id}" data-img="${m.id}" aria-label="Quitar esta foto">✕</button>${m.cover ? '<em>Portada</em>' : `<button type="button" class="pt-c" data-a="pimgcover" data-id="${it.id}" data-img="${m.id}">Portada</button>`}</span>`).join('')}</div>`;
+}
+const pthRefresh = (r) => { const i = P.items.findIndex(x => x.id == r.id); if (i >= 0) P.items[i] = r; const box = $('#pth'); if (box) box.innerHTML = r.images.length ? pthumbs(r) : '<p class="mu"><small>Esta publicación ya no tiene fotos.</small></p>'; };
+
 function pform(id) {
   const it = id ? P.items.find(x => x.id == id) : null;
   const groups = CATS.map(([k, l]) => `<optgroup label="${l}">${P.styles.filter(s => s.category === k).map(s => `<option value="${s.id}" ${it && it.style.id === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</optgroup>`).join('');
@@ -465,7 +471,7 @@ function pform(id) {
  <label>${it && it.images.length ? 'Agregar más imágenes' : 'Imágenes'} (JPG, PNG o WebP, máx. 5 MB cada una, hasta 8 por publicación; podés elegir varias a la vez)<input type="file" name="img" multiple accept="image/jpeg,image/png,image/webp"></label>
  <label>Enlace de Instagram (opcional: video o publicación para mostrar en el trabajo)<input name="ig" type="url" maxlength="300" placeholder="https://www.instagram.com/reel/..." value="${esc(it ? it.instagramUrl || '' : '')}"></label>
  <label>Texto alternativo de la imagen (accesibilidad)<input name="alt" placeholder="Ej: Degradé bajo visto de costado"></label>
- ${it && it.images.length ? `<div class="thumbs">${it.images.map(m => `<img src="${esc(imgUrl(m.url))}" alt="${esc(m.altText)}">`).join('')}</div>` : ''}
+ ${it && it.images.length ? `<div id="pth">${pthumbs(it)}</div>` : ''}
  <label style="font-weight:400"><input type="checkbox" name="pub" ${it && it.status === 'PUBLISHED' ? 'checked' : ''} style="width:auto"> Publicar en el sitio</label>
  <label style="font-weight:400"><input type="checkbox" name="feat" ${it && it.featured ? 'checked' : ''} style="width:auto"> Destacar este trabajo (aparece primero y con una cinta)</label>
  <label>Orden (el número menor aparece primero)<input type="number" name="ord" step="1" value="${it ? it.sortOrder : 0}"></label>${btns('Guardar')}</form>`);
@@ -516,10 +522,25 @@ const A = {
   cdel(d) { ask('¿Eliminar este bloqueo?', async () => { try { await api(`/api/closures/${d.id}`, { method: 'DELETE' }); toast('Bloqueo eliminado.'); loadPanel(); } catch (e) { toast(e.message, 1); } }); },
   async cgo(d) { try { await api('/api/closures', { method: 'POST', body: { ...P.cbody, authorizeAffected: true, cancelAffected: d.m === 'cancel' } }); done(d.m === 'cancel' ? 'Bloqueo creado y turnos cancelados.' : 'Bloqueo creado. Los turnos afectados siguen en la agenda.'); } catch (e) { toast(e.message, 1); } },
   snew() { sform(); }, sedit(d) { sform(d.id); },
+  async stoggle(d) {
+    const s = P.services.find(x => x.id == d.id); if (!s) return;
+    try { await api(`/api/services/${s.id}`, { method: 'PUT', body: { name: s.name, description: s.description || null, price: Number(s.price), durationMinutes: s.durationMinutes, active: !s.active } }); toast(s.active ? 'Servicio oculto: ya no se muestra en el sitio.' : 'Servicio visible en el sitio.'); loadPanel(); } catch (e) { toast(e.message, 1); }
+  },
+  sdel(d) {
+    const s = P.services.find(x => x.id == d.id); if (!s) return;
+    ask('¿Borrar "' + s.name + '"?', async () => { try { await api(`/api/services/${s.id}`, { method: 'DELETE' }); toast('Servicio borrado.'); loadPanel(); } catch (e) { toast(e.status === 409 ? e.message : e.message, 1); } }, 'Sí, borrar');
+  },
   cnew() { cform(); },
   carch(d) { ask('¿Archivar este cliente?', async () => { try { await api(`/api/clients/${d.id}/archive`, { method: 'POST' }); toast('Cliente archivado.'); loadPanel(); } catch (e) { toast(e.message, 1); } }, 'Archivar'); },
   async cvis(d) { try { const v = await api(`/api/clients/${d.id}/visits`); dopen(`<h2>Historial de visitas</h2>${v.length ? `<ul class="list">${v.map(x => `<li><div class="gr"><b>${esc(x.serviceName)}</b><br><span class="mu">${esc(dlong(x.performedAt))}</span></div><b>${money(x.finalPrice)}</b></li>`).join('')}</ul>` : '<p class="mu">Todavía no tiene visitas completadas.</p>'}<div class="row" style="margin-top:12px"><button class="btn ghost" data-a="close">Cerrar</button></div>`); } catch (e) { toast(e.message, 1); } },
   pnewitem() { pform(); }, iedit(d) { pform(d.id); },
+  async pimgdel(d, el) {
+    if (!el.dataset.sure) { el.dataset.sure = '1'; el.textContent = '¿Quitar?'; el.classList.add('sure'); setTimeout(() => { if (el.isConnected) { delete el.dataset.sure; el.textContent = '✕'; el.classList.remove('sure'); } }, 3500); return; }
+    try { const r = await api(`/api/portfolio/${d.id}/images/${d.img}`, { method: 'DELETE' }); pthRefresh(r); toast('Foto quitada.'); loadPanel(); } catch (e) { toast(e.message, 1); }
+  },
+  async pimgcover(d) {
+    try { const r = await api(`/api/portfolio/${d.id}/images/${d.img}/cover`, { method: 'PUT' }); pthRefresh(r); toast('Portada cambiada.'); loadPanel(); } catch (e) { toast(e.message, 1); }
+  },
   async itog(d) { const i = P.items.find(x => x.id == d.id); try { await api(`/api/portfolio/${d.id}/${i.status === 'PUBLISHED' ? 'unpublish' : 'publish'}`, { method: 'POST' }); toast(i.status === 'PUBLISHED' ? 'Pasó a borrador.' : 'Publicado.'); loadPanel(); } catch (e) { toast(e.message, 1); } },
   idel(d) { ask('¿Borrar esta publicación?', async () => { try { await api(`/api/portfolio/${d.id}`, { method: 'DELETE' }); toast('Publicación borrada.'); loadPanel(); } catch (e) { toast(e.message, 1); } }); }
 };
