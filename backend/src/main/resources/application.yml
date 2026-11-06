@@ -49,3 +49,8 @@ app:
     cloud-name: ${CLOUDINARY_CLOUD_NAME:}
     api-key: ${CLOUDINARY_API_KEY:}
     api-secret: ${CLOUDINARY_API_SECRET:}
+  notifications:                        # aviso por email al dueño cuando entra una reserva (Resend); sin claves queda desactivado
+    resend-api-key: ${RESEND_API_KEY:}
+    to: ${NOTIFY_EMAIL_TO:}             # uno o varios emails separados por coma
+    from: ${NOTIFY_EMAIL_FROM:IKONOSTUDIO <onboarding@resend.dev>}
+    panel-url: ${NOTIFY_PANEL_URL:}     # ej: https://tu-sitio.vercel.app/#/panel (opcional)
