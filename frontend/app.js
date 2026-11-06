@@ -405,8 +405,8 @@ async function bhours(id) {
   dopen(`<h2>Horario y días libres${name ? ': ' + esc(name) : ''}</h2>
  <p class="mu">Marcá los días que trabaja. <b>Los días sin marcar son sus días libres de todas las semanas.</b> El descanso es opcional.</p>
  <form data-f="hours" novalidate><input type="hidden" name="id" value="${id}">
- <div class="wk"><span></span><small>Inicio</small><small>Fin</small><small>Descanso desde</small><small>Descanso hasta</small></div>
- ${[1, 2, 3, 4, 5, 6, 7].map(row).join('')}${btns('Guardar horario')}</form>
+ <div class="wk"><span></span><small>Inicio</small><small>Fin</small><small>Descanso desde (opcional)</small><small>Descanso hasta (opcional)</small></div>
+ ${[1, 2, 3, 4, 5, 6, 7].map(row).join('')}<p class="mu" style="margin:4px 0 10px"><small>El descanso no es obligatorio: si dejás esos dos campos vacíos, trabaja corrido. <button type="button" class="btn sm ghost" data-a="nobreaks">Quitar todos los descansos</button></small></p>${btns('Guardar horario')}</form>
  <h3 class="st">Un día libre puntual o un horario especial</h3>
  <p class="mu"><small>Sirve para una sola fecha: no cambia las demás semanas. Para vacaciones de varios días usá la pestaña Cierres.</small></p>
  ${ovs.length ? `<ul class="list" style="margin-bottom:14px">${ovs.map(o => `<li><div class="gr"><b>${o.date}</b> ${o.dayOff ? 'Día libre' : `Trabaja de ${t5(o.startTime)} a ${t5(o.endTime)}`}${o.note ? `<br><small class="mu">${esc(o.note)}</small>` : ''}</div><button class="btn sm ghost" data-a="odel" data-b="${id}" data-id="${o.id}">Quitar</button></li>`).join('')}</ul>` : '<p class="mu">No hay fechas especiales cargadas.</p>'}
@@ -522,6 +522,7 @@ const A = {
   cdel(d) { ask('¿Eliminar este bloqueo?', async () => { try { await api(`/api/closures/${d.id}`, { method: 'DELETE' }); toast('Bloqueo eliminado.'); loadPanel(); } catch (e) { toast(e.message, 1); } }); },
   async cgo(d) { try { await api('/api/closures', { method: 'POST', body: { ...P.cbody, authorizeAffected: true, cancelAffected: d.m === 'cancel' } }); done(d.m === 'cancel' ? 'Bloqueo creado y turnos cancelados.' : 'Bloqueo creado. Los turnos afectados siguen en la agenda.'); } catch (e) { toast(e.message, 1); } },
   snew() { sform(); }, sedit(d) { sform(d.id); },
+  nobreaks() { document.querySelectorAll('form[data-f=hours] input[name^=bs],form[data-f=hours] input[name^=be]').forEach(i => { i.value = ''; }); toast('Descansos quitados: tocá Guardar horario para confirmar.'); },
   async stoggle(d) {
     const s = P.services.find(x => x.id == d.id); if (!s) return;
     try { await api(`/api/services/${s.id}`, { method: 'PUT', body: { name: s.name, description: s.description || null, price: Number(s.price), durationMinutes: s.durationMinutes, active: !s.active } }); toast(s.active ? 'Servicio oculto: ya no se muestra en el sitio.' : 'Servicio visible en el sitio.'); loadPanel(); } catch (e) { toast(e.message, 1); }
@@ -584,7 +585,11 @@ const F = {
     for (let d = 1; d <= 7; d++) {
       if (!fd.get('on' + d)) continue;
       const it = { weekday: d, startTime: fd.get('s' + d), endTime: fd.get('e' + d) };
-      if (fd.get('bs' + d) && fd.get('be' + d)) { it.breakStart = fd.get('bs' + d); it.breakEnd = fd.get('be' + d); }
+      const bs = fd.get('bs' + d), be = fd.get('be' + d);
+      if (bs && be && bs < be) {   // descanso opcional: vacio (o sin duracion) = trabaja corrido
+        if (bs < it.startTime || be > it.endTime) return err('El descanso del ' + WD[d].toLowerCase() + ' tiene que estar dentro de su horario (' + it.startTime + ' a ' + it.endTime + '). Si no hace descanso, dejá esos campos vacíos o tocá "Quitar todos los descansos".');
+        it.breakStart = bs; it.breakEnd = be;
+      } else if ((bs && !be) || (!bs && be)) return err('El descanso del ' + WD[d].toLowerCase() + ' necesita hora de inicio y de fin. Si no hace descanso, dejá los dos campos vacíos.');
       items.push(it);
     }
     try { await api(`/api/barbers/${id}/hours`, { method: 'PUT', body: { items } }); done('Horario guardado.'); } catch (e) { err(e.message); }
