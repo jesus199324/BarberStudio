@@ -3,8 +3,14 @@ package com.barberstudio.inventory;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.barberstudio.support.IntegrationTestBase;
+import com.jayway.jsonpath.JsonPath;
 import jakarta.servlet.http.Cookie;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import org.springframework.mock.web.MockMultipartFile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.ResultActions;
@@ -183,5 +189,55 @@ class ProductApiTest extends IntegrationTestBase {
     @Test
     void unauthenticatedGets401() throws Exception {
         send(null, "GET", "/api/products", null).andExpect(status().isUnauthorized());
+    }
+
+    // ---- foto ----
+    static final byte[] PNG = {(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0};
+
+    private ResultActions upload(Cookie c, long product, byte[] bytes) throws Exception {
+        return mvc.perform(multipart("/api/products/" + product + "/image")
+            .file(new MockMultipartFile("file", "foto.png", "image/png", bytes)).cookie(c));
+    }
+
+    private Path fileOf(long product) {
+        String key = jdbc.queryForObject("SELECT image_key FROM product WHERE id = ?", String.class, product);
+        return Path.of("./target/test-uploads").toAbsolutePath().normalize().resolve(key);
+    }
+
+    @Test
+    void ownerUploadsAndReplacesImage() throws Exception {
+        long p = create(owner, "Cera mate");
+        String first = JsonPath.read(upload(owner, p, PNG).andExpect(status().isOk())
+            .andExpect(jsonPath("$.imageUrl").isNotEmpty()).andReturn().getResponse().getContentAsString(), "$.imageUrl");
+        Path firstFile = fileOf(p);
+        assertThat(Files.exists(firstFile)).isTrue();
+
+        String second = JsonPath.read(upload(owner, p, PNG).andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString(), "$.imageUrl");
+        assertThat(second).isNotEqualTo(first);
+        assertThat(Files.exists(firstFile)).isFalse();
+        assertThat(Files.exists(fileOf(p))).isTrue();
+    }
+
+    @Test
+    void ownerRemovesImage() throws Exception {
+        long p = create(owner, "Cera mate");
+        upload(owner, p, PNG).andExpect(status().isOk());
+        Path file = fileOf(p);
+        mvc.perform(delete("/api/products/" + p + "/image").cookie(owner)).andExpect(status().isNoContent());
+        assertThat(Files.exists(file)).isFalse();
+        send(owner, "GET", "/api/products", null).andExpect(jsonPath("$[0].imageUrl").doesNotExist());
+    }
+
+    @Test
+    void rejectsNonImageFile() throws Exception {
+        long p = create(owner, "Cera mate");
+        upload(owner, p, "no soy una imagen".getBytes()).andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void barberCannotUploadImage() throws Exception {
+        long p = create(owner, "Cera mate");
+        upload(barber, p, PNG).andExpect(status().isForbidden());
     }
 }
