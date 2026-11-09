@@ -16,10 +16,17 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 class StockServiceTest extends IntegrationTestBase {
 
     @Autowired StockService stock;
+    @Autowired ProductRepository products;
+    TransactionTemplate tx;
+
+    @Autowired
+    void setTx(PlatformTransactionManager tm) { tx = new TransactionTemplate(tm); }
 
     long shopA, shopB, product;
 
@@ -79,6 +86,24 @@ class StockServiceTest extends IntegrationTestBase {
         assertThatThrownBy(() -> stock.move(change(shopA, 0, MovementReason.ADJUSTMENT)))
             .isInstanceOf(IllegalArgumentException.class);
         assertThat(movements(product)).isZero();
+    }
+
+    @Test
+    void editingProductDoesNotOverwriteConcurrentStockChange() throws Exception {
+        ExecutorService other = Executors.newSingleThreadExecutor();
+        tx.executeWithoutResult(s -> {
+            Product p = products.findById(product).orElseThrow();      // lee stock = 1
+            try {
+                other.submit(() -> stock.move(change(shopA, 4, MovementReason.PURCHASE))).get(30, TimeUnit.SECONDS);
+            } catch (Exception e) { throw new IllegalStateException(e); }
+            p.setName("Cera mate premium");                              // edición de datos, no de stock
+            products.saveAndFlush(p);
+        });
+        other.shutdown();
+
+        assertThat(stockOf(product)).isEqualTo(5);
+        assertThat(jdbc.queryForObject("SELECT 1 + sum(delta) FROM stock_movement WHERE product_id = ?", Integer.class, product))
+            .isEqualTo(stockOf(product));
     }
 
     @Test

@@ -140,6 +140,15 @@ class ProductApiTest extends IntegrationTestBase {
     }
 
     @Test
+    void putWithoutDescriptionKeepsItAndBlankClearsIt() throws Exception {
+        long p = id(postJson(owner, "/api/products", "{\"name\":\"Aceite\",\"price\":300,\"description\":\"Argán\"}"));
+        send(owner, "PUT", "/api/products/" + p, "{\"name\":\"Aceite\",\"price\":320}").andExpect(status().isOk())
+            .andExpect(jsonPath("$.description").value("Argán"));
+        send(owner, "PUT", "/api/products/" + p, "{\"name\":\"Aceite\",\"price\":320,\"description\":\"  \"}").andExpect(status().isOk())
+            .andExpect(jsonPath("$.description").doesNotExist());
+    }
+
+    @Test
     void sameNameAllowedInOtherShop() throws Exception {
         create(owner, "Cera Mate");
         send(ownerB, "POST", "/api/products", "{\"name\":\"Cera Mate\",\"price\":250}").andExpect(status().isCreated());
