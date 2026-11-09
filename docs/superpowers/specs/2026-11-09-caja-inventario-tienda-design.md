@@ -43,7 +43,6 @@ Todas las tablas llevan `id`, `created_at` (vía `BaseEntity`) y `barbershop_id`
 | image_url | VARCHAR(500) | reutiliza `ImageStorage` |
 | active | BOOLEAN NOT NULL DEFAULT true | inactivo = no se vende |
 | visible_in_shop | BOOLEAN NOT NULL DEFAULT true | false = solo uso interno |
-| version | BIGINT | bloqueo optimista |
 
 **stock_movement**
 | Columna | Tipo | Notas |
@@ -165,7 +164,7 @@ Público (sin login):
 | GET | `/api/public/{slug}/products` | solo activos, visibles y con stock > 0 |
 | POST | `/api/public/{slug}/orders` | con `RateLimiter`; responde `{code, total, whatsappUrl}` armado con `WhatsAppLinks` |
 
-**Permisos:** se habilita `@EnableMethodSecurity` y se usa `@PreAuthorize("hasRole('OWNER')")` en los endpoints solo para el dueño. Hay que revisar que los endpoints existentes sigan funcionando igual (tests de regresión).
+**Permisos:** `@EnableMethodSecurity` ya está activo y `SettingsController` ya usa `@PreAuthorize("hasRole('OWNER')")`; los módulos nuevos siguen ese mismo patrón en los endpoints solo para el dueño.
 
 ## 5. Frontend (JavaScript puro, ES modules)
 
