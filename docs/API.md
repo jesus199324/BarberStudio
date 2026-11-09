@@ -74,3 +74,23 @@ Horario del barbero (excepción de la fecha, o semanal) − descanso − cierres
 | Público | `GET /public/{slug}/shop` devuelve esos datos y `openingHours`, calculado con los horarios de los barberos activos |
 | Portfolio | `featured` y `sortOrder` en publicaciones; `POST /portfolio/{id}/feature` alterna el destacado. La galería pública muestra primero los destacados, luego por orden y fecha |
 | Migración | `V4__footer_and_featured.sql` |
+
+---
+# Inventario — `/api/products`
+| Método | Ruta | Rol | Detalle |
+|---|---|---|---|
+| GET | `/products?lowStock=true` | dueño y barbero | Lista por nombre (incluye inactivos). `lowStock=true`: solo los que tienen `stock <= lowStockThreshold` |
+| POST | `/products` | dueño | Crea con stock 0. Nombre único por barbería (sin distinguir mayúsculas ni espacios) → 409 si se repite |
+| PUT | `/products/{id}` | dueño | Edita datos; no toca el stock. Opcionales en `null` conservan su valor |
+| POST | `/products/{id}/stock` | dueño | `{delta, reason, note}`. `reason`: `PURCHASE` (solo suma) o `ADJUSTMENT` (nota obligatoria). Nunca deja stock negativo (422) |
+| GET | `/products/{id}/movements` | dueño | Últimos 100 movimientos, el más nuevo primero |
+
+Ejemplo:
+```http
+POST /api/products/7/stock
+{"delta": -1, "reason": "ADJUSTMENT", "note": "Se rompió el frasco"}
+
+200 {"id":7,"name":"Cera mate","price":250.00,"stock":4,"lowStockThreshold":2,"lowStock":false,
+     "imageUrl":null,"active":true,"visibleInShop":true,"description":null}
+```
+Cada cambio queda en `stock_movement` (`SALE`, `ORDER`, `PURCHASE`, `ADJUSTMENT`, `VOID`, `ORDER_CANCEL`). Migración: `V9__inventory.sql`.
