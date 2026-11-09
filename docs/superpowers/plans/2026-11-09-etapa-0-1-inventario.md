@@ -268,9 +268,7 @@ git add backend && git commit -m "feat: foto de producto"
 - Registro de secciones en `app.js`: `function register(mod)` donde `mod = { tabs?: [[key, label, ownerOnly]], views?: {key: async () => html}, actions?: {name: (dataset, el) => void}, forms?: {name: (form) => void} }`. Hace `TABS.push(...)`, `Object.assign(T, mod.views)`, `Object.assign(A, mod.actions)`, `Object.assign(F, mod.forms)`. Las pestañas con `ownerOnly = true` se muestran solo si `S.me.role === 'OWNER'`.
 - `lib.js` también exporta `export const panel = { reload: () => {}, me: () => null }`; `app.js` asigna `panel.reload = loadPanel` y `panel.me = () => S.me`.
 
-- [ ] **Step 1: Verificar qué devuelve `/api/auth/me`**
-
-Si no incluye `role`, agregarlo al record de respuesta de `AuthController` y sumar en `ApiFlowIntegrationTest` un assert `jsonPath("$.role").value("OWNER")`. Run: `mvn -B test` → PASS.
+`/api/auth/me` ya devuelve `role` (`AuthController.MeResponse`), así que `S.me.role` está disponible sin cambios en el backend.
 
 - [ ] **Step 2: Mover los helpers a `lib.js` y convertir `app.js` en módulo**
 
