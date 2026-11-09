@@ -145,10 +145,10 @@ public class ProductService {
             .orElseThrow(() -> new NotFoundException("Producto no encontrado."));
     }
 
-    /** En PUT, los opcionales en null conservan el valor actual; en un producto nuevo quedan los valores por defecto. */
+    /** Opcionales en null conservan el valor actual (en un producto nuevo, el valor por defecto); descripcion en blanco la borra. */
     private static void apply(Product p, ProductRequest r, String name) {
         p.setName(name);
-        p.setDescription(r.description() == null || r.description().isBlank() ? null : r.description().trim());
+        if (r.description() != null) p.setDescription(r.description().isBlank() ? null : r.description().trim());
         p.setPrice(r.price());
         if (r.lowStockThreshold() != null) p.setLowStockThreshold(r.lowStockThreshold());
         if (r.active() != null) p.setActive(r.active());

@@ -81,7 +81,7 @@ Horario del barbero (excepción de la fecha, o semanal) − descanso − cierres
 |---|---|---|---|
 | GET | `/products?lowStock=true` | dueño y barbero | Lista por nombre (incluye inactivos). `lowStock=true`: solo los que tienen `stock <= lowStockThreshold` |
 | POST | `/products` | dueño | Crea con stock 0. Nombre único por barbería (sin distinguir mayúsculas ni espacios) → 409 si se repite |
-| PUT | `/products/{id}` | dueño | Edita datos; no toca el stock. Opcionales en `null` conservan su valor |
+| PUT | `/products/{id}` | dueño | Edita datos; no toca el stock. Opcionales en `null` conservan su valor; `description` en blanco la borra |
 | POST | `/products/{id}/stock` | dueño | `{delta, reason, note}`. `reason`: `PURCHASE` (solo suma) o `ADJUSTMENT` (nota obligatoria). Nunca deja stock negativo (422) |
 | GET | `/products/{id}/movements` | dueño | Últimos 100 movimientos, el más nuevo primero |
 | POST | `/products/{id}/image` | dueño | Multipart `file` (JPG, PNG o WebP, máx. 5 MB). Reemplaza la foto anterior |

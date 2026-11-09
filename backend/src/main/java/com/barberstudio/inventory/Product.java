@@ -4,12 +4,17 @@ import com.barberstudio.common.persistence.BaseEntity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import lombok.AccessLevel;
+import org.hibernate.annotations.DynamicUpdate;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/** Producto de cuidado. El stock solo cambia a traves de StockService (setter de paquete). */
+/**
+ * Producto de cuidado. El stock solo cambia a traves de StockService (setter de paquete).
+ * DynamicUpdate: editar datos o la foto solo escribe esas columnas y nunca pisa un stock leido antes.
+ */
 @Entity
+@DynamicUpdate
 @Table(name = "product")
 @Getter @Setter @NoArgsConstructor
 public class Product extends BaseEntity {
