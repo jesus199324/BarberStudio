@@ -5,7 +5,7 @@ Plataforma para barbería (jesuss.sk8): sitio público con reservas por calendar
 ## Estado
 | Parte | Estado |
 |---|---|
-| `backend/` | API REST (Spring Boot, PostgreSQL, JWT): barberos, horarios, cierres, motor de disponibilidad, reservas, clientes, servicios, portfolio. Escrita con pruebas de integración, **todavía sin verificar por ejecución**: mirá el CI |
+| `backend/` | API REST (Spring Boot, PostgreSQL, JWT): barberos, horarios, cierres, motor de disponibilidad, reservas, clientes, servicios, portfolio. 41 pruebas (integración con PostgreSQL real) **en verde en el CI** (verificado el 2026-11-09) |
 | `frontend/index.html` + `app.js` | Sitio y panel **reales**, conectados a la API (sin build: JavaScript puro) |
 | `frontend/demo.html` | Maqueta con datos simulados, solo como referencia visual (quiz de cortes, sugerencias por rostro, combos). No es el producto |
 | Despliegue | Netlify + Render + Neon, preparado (`docs/DEPLOY.md`) |
