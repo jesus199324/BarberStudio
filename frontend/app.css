@@ -693,3 +693,11 @@ html[data-theme] dialog .pic,html[data-theme] dialog #mainpic{filter:none!import
 .pt-c{border:1px solid var(--bd,#555);background:transparent;color:var(--tx);cursor:pointer}
 .pt em{background:var(--red);color:var(--on,#111)}
 .pt-hint{margin:6px 0 2px}
+
+/* ---- inventario ---- */
+.inv-pic{width:48px;height:48px;border-radius:8px;object-fit:cover;flex:none;border:1px solid var(--bd)}
+.inv-nopic{display:grid;place-items:center;font-size:1.4rem;background:var(--sf)}
+.inv-stock{min-width:70px;text-align:center;font-size:1.5rem;font-weight:600;line-height:1.1}
+.inv-stock small{display:block;font-size:.7rem;font-weight:400;color:var(--mu)}
+.inv-low{color:#d64545}.inv-low small{color:#d64545}
+.inv-in{color:var(--blue)}.inv-out{color:#d64545}

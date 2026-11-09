@@ -1,14 +1,20 @@
 # Barber Studio
 
-Plataforma para barbería (jesuss.sk8): sitio público con reservas por calendario y portfolio, y panel de gestión (agenda, barberos, horarios, cierres, servicios, clientes, portfolio y ajustes).
+Plataforma para barbería (jesuss.sk8): sitio público con reservas por calendario y portfolio, y panel de gestión (agenda, barberos, horarios, cierres, servicios, clientes, portfolio, inventario y ajustes).
+
+## Inventario
+Productos de cuidado con stock, aviso de stock bajo, foto e historial de cada movimiento (reposición, ajuste, venta). Solo el dueño los edita; los barberos ven la lista.
+
+![Pantalla de inventario](docs/capturas/inventario.png)
 
 ## Estado
 | Parte | Estado |
 |---|---|
-| `backend/` | API REST (Spring Boot, PostgreSQL, JWT): barberos, horarios, cierres, motor de disponibilidad, reservas, clientes, servicios, portfolio. Escrita con pruebas de integración, **todavía sin verificar por ejecución**: mirá el CI |
+| `backend/` | API REST (Spring Boot, PostgreSQL, JWT): barberos, horarios, cierres, motor de disponibilidad, reservas, clientes, servicios, portfolio. 41 pruebas (integración con PostgreSQL real) **en verde en el CI** (verificado el 2026-11-09) |
 | `frontend/index.html` + `app.js` | Sitio y panel **reales**, conectados a la API (sin build: JavaScript puro) |
 | `frontend/demo.html` | Maqueta con datos simulados, solo como referencia visual (quiz de cortes, sugerencias por rostro, combos). No es el producto |
 | Despliegue | Netlify + Render + Neon, preparado (`docs/DEPLOY.md`) |
+| Inventario | Productos, stock con historial (`stock_movement`) y pantalla en el panel: ver `docs/API.md` |
 | Pendiente | Cloudinary, fichas de clientes, fidelización, promociones, mensajes, reseñas, footer configurable |
 
 ## Probar en local
