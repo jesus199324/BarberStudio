@@ -84,6 +84,8 @@ Horario del barbero (excepción de la fecha, o semanal) − descanso − cierres
 | PUT | `/products/{id}` | dueño | Edita datos; no toca el stock. Opcionales en `null` conservan su valor |
 | POST | `/products/{id}/stock` | dueño | `{delta, reason, note}`. `reason`: `PURCHASE` (solo suma) o `ADJUSTMENT` (nota obligatoria). Nunca deja stock negativo (422) |
 | GET | `/products/{id}/movements` | dueño | Últimos 100 movimientos, el más nuevo primero |
+| POST | `/products/{id}/image` | dueño | Multipart `file` (JPG, PNG o WebP, máx. 5 MB). Reemplaza la foto anterior |
+| DELETE | `/products/{id}/image` | dueño | Quita la foto (204) |
 
 Ejemplo:
 ```http

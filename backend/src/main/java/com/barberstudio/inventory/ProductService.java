@@ -4,6 +4,11 @@ import com.barberstudio.common.error.BusinessRuleException;
 import com.barberstudio.common.error.ConflictException;
 import com.barberstudio.common.error.NotFoundException;
 import com.barberstudio.common.security.CurrentUser;
+import com.barberstudio.portfolio.ImageStorage;
+import com.barberstudio.portfolio.ImageValidator;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Min;
@@ -27,6 +32,7 @@ public class ProductService {
     private final ProductRepository products;
     private final StockMovementRepository movements;
     private final StockService stock;
+    private final ImageStorage images;
 
     public record ProductRequest(
         @NotBlank(message = "El nombre es obligatorio") @Size(max = 120) String name,
@@ -101,6 +107,37 @@ public class ProductService {
         Product p = find(id);
         return movements.findTop100ByProductIdOrderByCreatedAtDescIdDesc(p.getId()).stream()
             .map(MovementResponse::from).toList();
+    }
+
+    /** Guarda la foto nueva y, recien despues de grabar en la base, borra la anterior. */
+    @Transactional
+    public ProductResponse setImage(Long id, MultipartFile file) {
+        Product p = find(id);
+        byte[] bytes;
+        try { bytes = file.getBytes(); } catch (IOException e) { throw new UncheckedIOException(e); }
+        String ext = ImageValidator.extensionFor(bytes);
+        var stored = images.store(p.getBarbershopId(), bytes, ext);
+        String oldKey = p.getImageKey();
+        p.setImageKey(stored.key());
+        p.setImageUrl(stored.url());
+        try {
+            products.saveAndFlush(p);
+        } catch (RuntimeException e) {
+            images.delete(stored.key());   // evita archivos huerfanos si falla la base de datos
+            throw e;
+        }
+        if (oldKey != null) images.delete(oldKey);
+        return ProductResponse.from(p);
+    }
+
+    @Transactional
+    public void removeImage(Long id) {
+        Product p = find(id);
+        String oldKey = p.getImageKey();
+        p.setImageKey(null);
+        p.setImageUrl(null);
+        products.saveAndFlush(p);
+        if (oldKey != null) images.delete(oldKey);
     }
 
     Product find(Long id) {

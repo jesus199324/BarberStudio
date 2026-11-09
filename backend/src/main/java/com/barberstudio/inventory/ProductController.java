@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/products")
@@ -36,6 +37,17 @@ public class ProductController {
     public ProductResponse adjustStock(@PathVariable Long id, @Valid @RequestBody StockAdjustRequest r) {
         return service.adjustStock(id, r);
     }
+
+    @PostMapping("/{id}/image")
+    @PreAuthorize("hasRole('OWNER')")
+    public ProductResponse setImage(@PathVariable Long id, @RequestPart("file") MultipartFile file) {
+        return service.setImage(id, file);
+    }
+
+    @DeleteMapping("/{id}/image")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('OWNER')")
+    public void removeImage(@PathVariable Long id) { service.removeImage(id); }
 
     @GetMapping("/{id}/movements")
     @PreAuthorize("hasRole('OWNER')")
