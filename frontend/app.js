@@ -1,21 +1,6 @@
 'use strict';
 /* Barber Studio: sitio público + panel. Todo viene de la API real (sin datos simulados). */
-const CFG = window.CFG || {};
-const LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname);
-const API = LOCAL ? (CFG.devApi || 'http://localhost:8080') : '';
-const SLUG = LOCAL ? CFG.devSlug : CFG.slug;
-const TZ = 'America/Montevideo', OFF = '-03:00';   // Uruguay no usa horario de verano
-
-const $ = s => document.querySelector(s);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const money = n => '$ ' + Number(n).toLocaleString('es-UY');
-const hm = t => new Date(t).toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit', timeZone: TZ });
-const dlong = t => new Date(t).toLocaleDateString('es-UY', { weekday: 'long', day: 'numeric', month: 'long', timeZone: TZ });
-const ymd = d => new Date(d).toLocaleDateString('en-CA', { timeZone: TZ });
-const pad = n => String(n).padStart(2, '0');
-const toISO = (d, t) => new Date(`${d}T${t}:00${OFF}`).toISOString();
-const t5 = t => (t ? String(t).slice(0, 5) : '');
-const imgUrl = u => (u && u.startsWith('/') ? API + u : u);
+import { CFG, LOCAL, API, SLUG, TZ, OFF, $, esc, money, hm, dlong, ymd, pad, toISO, t5, imgUrl, api, retry, dlg, dopen, dclose, toast, fv, sel, btns, panel } from './lib.js';
 const WD = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 const REASONS = { FERIADO: 'Feriado', VACACIONES: 'Vacaciones', CIERRE_EXTRAORDINARIO: 'Cierre extraordinario', MANTENIMIENTO: 'Reforma o mantenimiento', PERSONAL: 'Día personal', LICENCIA: 'Licencia', OTRO: 'Otro motivo' };
 const ST = { PENDING: 'Pendiente', CONFIRMED: 'Confirmado', COMPLETED: 'Completado', CANCELLED: 'Cancelado' };
@@ -24,41 +9,14 @@ const CATS = [['CORTE', 'Cortes'], ['COLOR', 'Color'], ['BARBA', 'Barba'], ['TAT
 const TN = { shelby: 'Clásico', skate: 'Urbano' }, TO = ['shelby', 'skate'];   // solo dos temas
 try { const t = localStorage.getItem('theme'); if (TO.includes(t)) document.documentElement.dataset.theme = t; else if (TO.includes(CFG.defaultTheme)) document.documentElement.dataset.theme = CFG.defaultTheme; } catch (e) { if (TO.includes(CFG.defaultTheme)) document.documentElement.dataset.theme = CFG.defaultTheme; }
 
-async function api(path, o = {}) {
-  const init = { method: o.method || 'GET', credentials: 'include', headers: {} };
-  if (o.body !== undefined) { init.headers['Content-Type'] = 'application/json'; init.body = JSON.stringify(o.body); }
-  if (o.form) init.body = o.form;
-  let r;
-  try { r = await fetch(API + path, init); } catch (e) {
-    const x = new Error('No se pudo conectar con el servidor. Si recién lo abriste, esperá un minuto y volvé a intentar.'); x.network = true; throw x;
-  }
-  if (r.status === 204) return null;
-  if ([502, 503, 504].includes(r.status)) {   // el servidor gratuito se duerme: Netlify responde así mientras despierta
-    const x = new Error('El servidor está despertando. Esperá un momento…'); x.network = true; throw x;
-  }
-  const t = await r.text(); let d = null; try { d = t ? JSON.parse(t) : null; } catch (e) { /* no era JSON */ }
-  if (!r.ok) {
-    const x = new Error((d && d.errors && Object.values(d.errors)[0]) || (d && d.detail) || ('Error ' + r.status));
-    x.status = r.status; x.data = d; throw x;
-  }
-  return d;
-}
-async function retry(fn, n = 10) {
-  for (let i = 0; ; i++) { try { return await fn(); } catch (e) { if (!e.network || i >= n) throw e; await new Promise(r => setTimeout(r, 5000)); } }
-}
 
 const S = { mode: 'public', shop: null, services: [], barbers: [], styles: [], items: [], list: [], me: null, meChecked: false, cat: '', sty: '', q: '', loading: true, err: null, ref: null };
 const P = { tab: 'agenda', date: ymd(new Date()), barber: '', q: '', barbers: [], services: [], items: [], styles: [] };
 const fresh = () => { const n = new Date(); return { svc: null, barber: null, y: n.getFullYear(), m: n.getMonth(), days: {}, day: null, slots: [], slot: null, f: {}, done: null, busy: false, tokD: 0, tokS: 0 }; };
 let B = fresh();
 
-const dlg = $('#dlg');
-const dopen = (html, cls) => { dlg.className = cls || ''; dlg.innerHTML = html; if (!dlg.open) dlg.showModal(); };
-const dclose = () => { if (dlg.open) dlg.close(); };
 let pending = null;
 const ask = (msg, fn, label) => { pending = fn; dopen(`<h2>${esc(msg)}</h2><p class="mu">Esta acción no se puede deshacer.</p><div class="row"><button class="btn" data-a="yes">${label || 'Sí, continuar'}</button><button class="btn ghost" data-a="close">Volver</button></div>`); };
-const toast = (m, bad) => { const t = $('#toast'); t.textContent = m; t.className = bad ? 'bad' : ''; clearTimeout(toast.k); toast.k = setTimeout(() => { t.textContent = ''; }, 4500); };
-const fv = f => Object.fromEntries(new FormData(f));
 
 /* ============================ SITIO PÚBLICO ============================ */
 function header() {
@@ -249,7 +207,7 @@ function panelShell() {
  ${LOCAL ? '<p class="mu"><small>Desarrollo: demo@barberstudio.test / demo1234</small></p>' : ''}
  <small class="err" id="e-login"></small><button class="btn">Ingresar</button></form></section>`;
   }
-  return `<div class="pole"></div><div class="tabs">${TABS.map(([k, l]) => `<button class="chip" data-a="tab" data-v="${k}" aria-pressed="${P.tab === k}">${l}</button>`).join('')}
+  return `<div class="pole"></div><div class="tabs">${TABS.filter(t => !t[2] || S.me.role === 'OWNER').map(([k, l]) => `<button class="chip" data-a="tab" data-v="${k}" aria-pressed="${P.tab === k}">${l}</button>`).join('')}
  <span class="mu" style="margin-left:auto">${esc(S.me.email)}</span><button class="chip" data-a="logout">Cerrar sesión</button></div><div id="pbody" class="spin">Cargando…</div>`;
 }
 
@@ -363,8 +321,6 @@ const T = {
 };
 
 /* ---- diálogos ---- */
-const sel = (name, opts, cur) => `<select name="${name}">${opts.map(([v, l]) => `<option value="${v}" ${String(cur) === String(v) ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
-const btns = (ok) => `<small class="err" id="e-f"></small><div class="row"><button class="btn">${ok}</button><button type="button" class="btn ghost" data-a="close">Cancelar</button></div>`;
 
 async function newAppt() {
   const [cl, sv, bs] = await Promise.all([api('/api/clients'), api('/api/services?activeOnly=true'), api('/api/barbers')]);
@@ -648,6 +604,18 @@ const F = {
 };
 
 let tq;
+/* ---- módulos del panel ----
+ * Cada módulo (inventario.js, caja.js, ...) aporta pestañas, vistas, acciones y formularios.
+ * tabs: [[clave, etiqueta, soloDueño]] */
+function register(mod) {
+  if (mod.tabs) TABS.push(...mod.tabs);
+  Object.assign(T, mod.views || {});
+  Object.assign(A, mod.actions || {});
+  Object.assign(F, mod.forms || {});
+}
+panel.reload = () => loadPanel();
+panel.me = () => S.me;
+
 document.addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (b && A[b.dataset.a]) A[b.dataset.a](b.dataset, b); });
 document.addEventListener('submit', e => { const f = e.target.closest('form[data-f]'); if (f) { e.preventDefault(); F[f.dataset.f](f); } });
 document.addEventListener('input', e => {
