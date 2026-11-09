@@ -12,6 +12,9 @@ erDiagram
     BARBERSHOP ||--o{ PORTFOLIO_ITEM : publica
     BARBERSHOP ||--o{ APPOINTMENT : agenda
     BARBERSHOP ||--o{ APPOINTMENT_REQUEST : recibe
+    BARBERSHOP ||--o{ PRODUCT : vende
+    PRODUCT ||--o{ STOCK_MOVEMENT : "historial de stock"
+    APP_USER ||--o{ STOCK_MOVEMENT : registra
     CLIENT ||--o{ APPOINTMENT : reserva
     SERVICE ||--o{ APPOINTMENT : "se solicita en"
     APPOINTMENT ||--o| VISIT : "genera al completarse"
