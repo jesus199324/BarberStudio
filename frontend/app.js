@@ -1,6 +1,7 @@
 'use strict';
 /* Barber Studio: sitio público + panel. Todo viene de la API real (sin datos simulados). */
 import { CFG, LOCAL, API, SLUG, TZ, OFF, $, esc, money, hm, dlong, ymd, pad, toISO, t5, imgUrl, api, retry, dlg, dopen, dclose, toast, fv, sel, btns, panel } from './lib.js';
+import inventario from './inventario.js';
 const WD = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 const REASONS = { FERIADO: 'Feriado', VACACIONES: 'Vacaciones', CIERRE_EXTRAORDINARIO: 'Cierre extraordinario', MANTENIMIENTO: 'Reforma o mantenimiento', PERSONAL: 'Día personal', LICENCIA: 'Licencia', OTRO: 'Otro motivo' };
 const ST = { PENDING: 'Pendiente', CONFIRMED: 'Confirmado', COMPLETED: 'Completado', CANCELLED: 'Cancelado' };
@@ -615,6 +616,7 @@ function register(mod) {
 }
 panel.reload = () => loadPanel();
 panel.me = () => S.me;
+register(inventario);
 
 document.addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (b && A[b.dataset.a]) A[b.dataset.a](b.dataset, b); });
 document.addEventListener('submit', e => { const f = e.target.closest('form[data-f]'); if (f) { e.preventDefault(); F[f.dataset.f](f); } });
